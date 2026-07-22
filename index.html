@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mianchu Wang</title>
+  <meta name="description" content="Mianchu Wang" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✳️</text></svg>" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <script>
+    // Apply saved theme before first paint to avoid flashing.
+    const t = localStorage.getItem("theme");
+    if (t) document.documentElement.dataset.theme = t;
+  </script>
+</head>
+<body>
+  <div class="page">
+    <nav class="site-nav">
+      <a class="brand" href="./">Mianchu Wang</a>
+      <div class="nav-right">
+        <a href="https://github.com/MianchuWang" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">☾</button>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <h1>Mianchu Wang</h1>
+    </header>
+
+    <h2 class="section-title">Writing</h2>
+    <div id="post-list"><div class="loading">Loading…</div></div>
+
+    <footer class="site-footer">
+      <span>© 2026 Mianchu Wang</span>
+      <span>Markdown in, pixels out.</span>
+    </footer>
+  </div>
+
+  <script type="module" src="assets/home.js"></script>
+</body>
+</html>
