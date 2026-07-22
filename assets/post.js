@@ -35,6 +35,7 @@ async function main() {
   const { meta, body } = parseFrontmatter(raw);
   const title = meta.title || slug;
   document.title = `${title} · Mianchu Wang`;
+  if (meta.lang) document.documentElement.lang = meta.lang;
   titleEl.textContent = title;
 
   const tags = (meta.tags || [])

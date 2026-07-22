@@ -43,6 +43,7 @@ def main() -> None:
                 "slug": path.stem,
                 "title": meta.get("title", path.stem),
                 "date": meta.get("date", ""),
+                "lang": meta.get("lang", "en"),
                 "tags": meta.get("tags", []),
                 "summary": meta.get("summary", ""),
             }

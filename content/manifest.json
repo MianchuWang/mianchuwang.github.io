@@ -1,13 +1,14 @@
 {
   "posts": [
     {
-      "slug": "writing-reference",
-      "title": "排版参考：这个站点支持的全部写法",
+      "slug": "technical-writing-template",
+      "title": "Technical Writing Template: Everything This Site Can Render",
       "date": "2026-07-21",
+      "lang": "en",
       "tags": [
         "meta"
       ],
-      "summary": "一篇自用的样式参考——数学公式、代码、表格、提示框等所有支持的 Markdown 语法都在这里过一遍。"
+      "summary": "A reference post for technical writing — math, code, tables, callouts, and every other supported Markdown feature in one place."
     }
   ]
 }

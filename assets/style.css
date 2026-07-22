@@ -121,7 +121,7 @@ a {
 /* ----------------------------------------------------------------- home -- */
 
 .hero {
-  margin-top: 96px;
+  margin-top: 80px;
 }
 
 .hero h1 {
@@ -153,7 +153,7 @@ a {
 .hero .links a:hover { color: var(--fg); border-color: var(--fg-faint); }
 
 .section-title {
-  margin: 72px 0 8px;
+  margin: 56px 0 12px;
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
@@ -167,35 +167,26 @@ a {
   padding: 0;
 }
 
-.post-list li {
-  border-bottom: 1px solid var(--divider);
-}
-
 .post-list a {
-  display: block;
-  padding: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  padding: 7px 0;
 }
 
 .post-list .post-title {
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 
 .post-list a:hover .post-title { color: var(--accent); }
 
-.post-list .post-meta {
-  margin-top: 2px;
+.post-list .post-date {
+  flex: none;
   font-size: 13px;
   color: var(--fg-faint);
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-}
-
-.post-list .post-summary {
-  margin-top: 4px;
-  font-size: 14px;
-  color: var(--fg-soft);
+  white-space: nowrap;
 }
 
 .tag {
@@ -208,6 +199,73 @@ a {
   color: var(--fg-faint);
   font-size: 14px;
   padding: 32px 0;
+}
+
+/* -------------------------------------------------------- publications -- */
+
+.pub-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pub-list li {
+  padding: 7px 0;
+}
+
+.pub-title {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.pub-title a:hover { color: var(--accent); }
+
+.pub-meta {
+  margin-top: 1px;
+  font-size: 13px;
+  color: var(--fg-faint);
+}
+
+.pub-venue-short {
+  font-weight: 500;
+  color: var(--fg-soft);
+}
+
+/* ---------------------------------------------- experience / education -- */
+
+.hero-cv {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 40px;
+  margin-top: 32px;
+}
+
+@media (max-width: 560px) {
+  .hero-cv { grid-template-columns: 1fr; }
+}
+
+.hero-cv-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-faint);
+  margin-bottom: 8px;
+}
+
+.hero-cv-item {
+  margin-bottom: 10px;
+}
+
+.hero-cv-role {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hero-cv-org {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-faint);
 }
 
 /* -------------------------------------------------------------- article -- */

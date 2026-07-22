@@ -12,8 +12,9 @@ KaTeX + highlight.js — no build step, no framework).
    ---
    title: My Post
    date: 2026-07-22
+   lang: en              # "zh" for posts written in Chinese
    tags: [machine-learning]
-   summary: One-line summary shown on the home page.
+   summary: One-line summary describing the post.
    ---
 
    Inline math $E = mc^2$ and display math:
@@ -27,8 +28,8 @@ KaTeX + highlight.js — no build step, no framework).
    (`content/manifest.json`) and deploys automatically.
 
 Add `draft: true` to the frontmatter to keep a post off the site.
-See `content/writing-reference.md` for everything the renderer supports
-(callouts, tables, code highlighting, TOC, …).
+See `content/technical-writing-template.md` for everything the renderer
+supports (callouts, tables, code highlighting, TOC, …).
 
 ## Local preview
 
@@ -45,6 +46,8 @@ In the repo settings on GitHub: **Settings → Pages → Source → GitHub Actio
 
 ```
 content/           ← posts (Markdown + frontmatter); manifest.json is generated
+content/profile.json       ← name, bio, and links shown in the home hero
+content/publications.json  ← publication list shown on the home page
 index.html         ← home page (post list)
 post.html          ← article page (Markdown renderer, math, TOC)
 assets/            ← styles and JS
