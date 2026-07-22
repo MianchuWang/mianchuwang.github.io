@@ -7,7 +7,7 @@
       "venue": "Annual Conference on Neural Information Processing Systems (NeurIPS)",
       "venueShort": "NeurIPS",
       "year": 2025,
-      "url": ""
+      "url": "https://openreview.net/forum?id=m7uj1vIZ62"
     },
     {
       "id": "2025a",
@@ -16,7 +16,7 @@
       "venue": "International Conference on Learning Representations (ICLR)",
       "venueShort": "ICLR",
       "year": 2025,
-      "url": ""
+      "url": "https://openreview.net/forum?id=upkxzurnLC"
     },
     {
       "id": "2024b",
@@ -25,7 +25,7 @@
       "venue": "Transactions on Machine Learning Research (TMLR)",
       "venueShort": "TMLR",
       "year": 2024,
-      "url": ""
+      "url": "https://openreview.net/forum?id=zOKAmm8R9B"
     },
     {
       "id": "2024a",
@@ -34,7 +34,7 @@
       "venue": "Machine Learning",
       "venueShort": "Machine Learning",
       "year": 2024,
-      "url": ""
+      "url": "https://link.springer.com/article/10.1007/s10994-023-06500-z"
     }
   ]
 }
