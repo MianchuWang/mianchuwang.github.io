@@ -1,0 +1,40 @@
+{
+  "publications": [
+    {
+      "id": "2025b",
+      "title": "Retrosynthesis Planning via Worst-Path Policy Optimisation in Tree-Structured MDPs",
+      "authors": ["Mianchu Wang", "Giovanni Montana"],
+      "venue": "Annual Conference on Neural Information Processing Systems (NeurIPS)",
+      "venueShort": "NeurIPS",
+      "year": 2025,
+      "url": "https://openreview.net/forum?id=m7uj1vIZ62"
+    },
+    {
+      "id": "2025a",
+      "title": "Learning on One Mode: Addressing Multi-Modality in Offline Reinforcement Learning",
+      "authors": ["Mianchu Wang", "Yue Jin", "Giovanni Montana"],
+      "venue": "International Conference on Learning Representations (ICLR)",
+      "venueShort": "ICLR",
+      "year": 2025,
+      "url": "https://openreview.net/forum?id=upkxzurnLC"
+    },
+    {
+      "id": "2024b",
+      "title": "GOPlan: Goal-Conditioned Offline Reinforcement Learning by Planning with Learned Models",
+      "authors": ["Mianchu Wang", "Rui Yang", "Xi Chen", "Hao Sun", "Meng Fang", "Giovanni Montana"],
+      "venue": "Transactions on Machine Learning Research (TMLR)",
+      "venueShort": "TMLR",
+      "year": 2024,
+      "url": "https://openreview.net/forum?id=zOKAmm8R9B"
+    },
+    {
+      "id": "2024a",
+      "title": "Goal-Conditioned Offline Reinforcement Learning through State Space Partitioning",
+      "authors": ["Mianchu Wang", "Yue Jin", "Giovanni Montana"],
+      "venue": "Machine Learning",
+      "venueShort": "Machine Learning",
+      "year": 2024,
+      "url": "https://link.springer.com/article/10.1007/s10994-023-06500-z"
+    }
+  ]
+}

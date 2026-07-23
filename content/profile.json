@@ -1,0 +1,33 @@
+{
+  "name": "Mianchu Wang",
+  "bio": "Hi there 👋 I'm Mianchu, a Research Scientist at IBM Research UK. Before joining IBM, I completed my PhD and worked as a Research Fellow at the University of Warwick. My research focuses on reinforcement learning and its applications. These days I'm increasingly drawn to large-scale training and algorithms for modern language models.",
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/MianchuWang" },
+    { "label": "Google Scholar", "url": "https://scholar.google.com/citations?user=sk0VioYAAAAJ&hl=en" },
+    { "label": "mianchu.wang@outlook.com", "url": "mailto:mianchu.wang@outlook.com" }
+  ],
+  "experience": [
+    {
+      "organization": "IBM Research UK",
+      "role": "Research Scientist",
+      "period": "Nov 2025 – Present"
+    },
+    {
+      "organization": "University of Warwick",
+      "role": "Research Assistant, then Research Fellow",
+      "period": "Sep 2023 – Oct 2025"
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Warwick",
+      "degree": "Ph.D. in Engineering",
+      "period": "Oct 2020 – Aug 2025"
+    },
+    {
+      "institution": "Lancaster University",
+      "degree": "B.Sc. in Computer Science",
+      "period": "Sep 2016 – Jun 2020"
+    }
+  ]
+}
