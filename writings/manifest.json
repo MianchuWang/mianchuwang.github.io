@@ -1,0 +1,15 @@
+{
+  "posts": [
+    {
+      "slug": "2026-07-memory-profiling",
+      "title": "Memory Profiling in Forward and Backward Propagation",
+      "date": "2026-07-23",
+      "lang": "en",
+      "tags": [
+        "deep-learning",
+        "systems"
+      ],
+      "summary": "Where GPU memory actually goes during a training step, and how to measure it."
+    }
+  ]
+}

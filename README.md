@@ -6,7 +6,7 @@ KaTeX + highlight.js — no build step, no framework).
 
 ## Writing a post
 
-1. Add a Markdown file to `content/`, e.g. `content/my-post.md`:
+1. Add a Markdown file to `writings/`, e.g. `writings/2026-07-my-post.md`:
 
    ```markdown
    ---
@@ -25,10 +25,10 @@ KaTeX + highlight.js — no build step, no framework).
    ```
 
 2. Commit and push. The GitHub Actions workflow rebuilds the post index
-   (`content/manifest.json`) and deploys automatically.
+   (`writings/manifest.json`) and deploys automatically.
 
 Add `draft: true` to the frontmatter to keep a post off the site.
-See `content/technical-writing-template.md` for everything the renderer
+See `writings/technical-writing-template.md` for everything the renderer
 supports (callouts, tables, code highlighting, TOC, …).
 
 ## Local preview
@@ -45,8 +45,8 @@ In the repo settings on GitHub: **Settings → Pages → Source → GitHub Actio
 ## Layout
 
 ```
-content/           ← posts (Markdown + frontmatter); manifest.json is generated
-content/profile.json       ← name, bio, and links shown in the home hero
+writings/          ← posts (Markdown + frontmatter); manifest.json is generated
+content/profile.json       ← name, bio, education & experience (home hero)
 content/publications.json  ← publication list shown on the home page
 index.html         ← home page (post list)
 post.html          ← article page (Markdown renderer, math, TOC)
