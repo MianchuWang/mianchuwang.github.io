@@ -24,7 +24,7 @@ async function main() {
 
   let raw;
   try {
-    const res = await fetch(`content/${slug}.md`, { cache: "no-cache" });
+    const res = await fetch(`writings/${slug}.md`, { cache: "no-cache" });
     if (!res.ok) throw new Error(res.status);
     raw = await res.text();
   } catch {

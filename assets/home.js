@@ -42,7 +42,7 @@ function renderProfile(profile) {
     document.getElementById("hero-name").textContent = profile.name;
   }
   if (profile.bio) {
-    document.getElementById("hero-bio").textContent = profile.bio;
+    document.getElementById("hero-bio").innerHTML = profile.bio;
   }
   const linksEl = document.getElementById("hero-links");
   for (const link of profile.links || []) {
@@ -87,7 +87,7 @@ async function main() {
   let profile = {};
   try {
     const [manifestRes, pubRes, profileRes] = await Promise.all([
-      fetch("content/manifest.json", { cache: "no-cache" }),
+      fetch("writings/manifest.json", { cache: "no-cache" }),
       fetch("content/publications.json", { cache: "no-cache" }),
       fetch("content/profile.json", { cache: "no-cache" }),
     ]);
@@ -97,7 +97,7 @@ async function main() {
     renderProfile(profile);
     renderHeroCv(profile);
   } catch {
-    listEl.innerHTML = `<div class="empty-note">Could not load content/manifest.json — run <code>python3 scripts/build_manifest.py</code>.</div>`;
+    listEl.innerHTML = `<div class="empty-note">Could not load writings/manifest.json — run <code>python3 scripts/build_manifest.py</code>.</div>`;
     return;
   }
 

@@ -138,6 +138,14 @@ a {
   max-width: 560px;
 }
 
+.hero p a {
+  text-decoration: underline;
+  text-decoration-color: var(--fg-faint);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.1s;
+}
+.hero p a:hover { color: var(--fg); text-decoration-color: var(--fg); }
+
 .hero .links {
   margin-top: 20px;
   display: flex;
@@ -190,10 +198,15 @@ a {
 }
 
 .tag {
+  display: inline-block;
   font-size: 12px;
-  color: var(--fg-faint);
+  line-height: 1.6;
+  color: var(--fg-soft);
+  background: var(--callout-bg);
+  border-radius: 4px;
+  padding: 0 8px;
+  white-space: nowrap;
 }
-.tag::before { content: "#"; opacity: 0.7; }
 
 .empty-note {
   color: var(--fg-faint);

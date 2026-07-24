@@ -1,6 +1,6 @@
 {
   "name": "Mianchu Wang",
-  "bio": "Hi there 👋 I'm Mianchu, a Research Scientist at IBM Research UK. Before joining IBM, I completed my PhD and worked as a Research Fellow at the University of Warwick. My research focuses on reinforcement learning and its applications. These days I'm increasingly drawn to large-scale training and algorithms for modern language models.",
+  "bio": "Hi there 👋 I'm Mianchu, a Research Scientist at IBM Research UK. Before joining IBM, I completed my PhD and worked as a Research Fellow at the University of Warwick. I have been fortunate to be supervised by <a href=\"https://warwick.ac.uk/fac/sci/statistics/staff/academic-research/montana/\" target=\"_blank\" rel=\"noopener\">Prof. Giovanni Montana</a> during my PhD, and guided by <a href=\"https://research.ibm.com/people/geeth-r-de-mel-de-mel\" target=\"_blank\" rel=\"noopener\">Dr Geeth de Mel</a> in my industry research. My research focuses on reinforcement learning and its applications. These days I'm increasingly drawn to large-scale training and algorithms for modern language models.",
   "links": [
     { "label": "GitHub", "url": "https://github.com/MianchuWang" },
     { "label": "Google Scholar", "url": "https://scholar.google.com/citations?user=sk0VioYAAAAJ&hl=en" },
@@ -14,7 +14,7 @@
     },
     {
       "organization": "University of Warwick",
-      "role": "Research Assistant, then Research Fellow",
+      "role": "Research Fellow",
       "period": "Sep 2023 – Oct 2025"
     }
   ],

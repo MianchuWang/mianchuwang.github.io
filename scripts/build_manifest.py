@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scan content/*.md frontmatter and write content/manifest.json.
+"""Scan writings/*.md frontmatter and write writings/manifest.json.
 
 Run manually for local preview; CI runs it automatically on deploy.
 """
@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CONTENT = ROOT / "content"
+CONTENT = ROOT / "writings"
 
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 

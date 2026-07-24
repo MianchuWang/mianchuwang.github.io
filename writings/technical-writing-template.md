@@ -2,6 +2,7 @@
 title: "Technical Writing Template: Everything This Site Can Render"
 date: 2026-07-21
 tags: [meta]
+draft: true
 summary: A reference post for technical writing — math, code, tables, callouts, and every other supported Markdown feature in one place.
 ---
 
