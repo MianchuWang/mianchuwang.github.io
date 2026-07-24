@@ -52,7 +52,6 @@ Stanford [CS336, *Language Modeling from Scratch*](https://cs336.stanford.edu/),
 
 3. The transformer blocks produce hidden states $X$ of shape $[b, s, h]$. After the final RMSNorm layer, it will be projected to the logits $Z = X W_{vocab}$, where the shape of $W_{vocab}$ is $[h, n_{vocab}]$, and the shape of $Z$ is $[b, s, n_{vocab}]$. After applying SoftMax, we will know the probability distribution over the vocabulary at every position.
 
-## Model Parameters
 
 ## Propagation Activations
 
@@ -82,7 +81,25 @@ The next ones are the input of the GeLU layer, the activations from $X W_1$, and
 
 ### Activations in self-attention layers
 
+Now let's count the activations in the self-attention layer. As in the FFN layer, we have the input $2bsh$ bytes and the output from the RMSNorm layer $2bsh$ bytes. Then, we compute the query, the key, and the values. They themselves are activations, counting $2basd_q$, $2basd_k$, and $2basd_v$. As we have $d_q=d_k$, $a d_v = h$, and we assume $d_k = d_v$, we need $6bsh$ bytes in total. Later, we have the SoftMax scores $2bas^2$ and the SoftMax dropout mask $bas^2$. We also need to save the result after dropout: $2bas^2$ bytes. The remaining ones are the input of the projection $2bsh$ bytes and the final dropout mask $1bsh$ bytes. 
 
+
+
+| Layers       | Activations | Bytes |
+| :---:        | :---: | :---: |
+| Self-attention Layer     | RMSNorm - input | 2bsh |
+|                          | SA - input | 2bsh |
+|                          | SA - QKV | 6bsh|
+|                          | SA - SoftMax output | $2bas^2$|
+|                          | SA - SoftMax dropout| $1bas^2$|
+|                          | SA - scores dropout| $2bas^2$|
+|                          | SA - projection input| 2bsh|
+|                          | SA - final dropout| 1bsh|
+|**SELF-ATTENTION SUM**    | | $13bsh + 5bas^2$|
+
+
+> [!note]
+> Knowing how to compute the memory usage is more important than remembering the numbers. There are two reasons: (1) this equation stands on many architectural assumptions, such as the original transformer and the dropout. They seem to be outdated in recent modern LM designs. (2) Many LM systems store only a small part of the activations as re-computing the missing activations is more efficient than reading them from the GPU's HBM. 
 
 ## Memory Snapshot in `PyTorch`
 
