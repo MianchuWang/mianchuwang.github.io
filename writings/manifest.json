@@ -6,8 +6,8 @@
       "date": "2026-07-23",
       "lang": "en",
       "tags": [
-        "deep-learning",
-        "systems"
+        "Systems",
+        "Memory Profiling"
       ],
       "summary": "Where GPU memory actually goes during a training step, and how to measure it."
     }

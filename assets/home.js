@@ -42,7 +42,7 @@ function renderProfile(profile) {
     document.getElementById("hero-name").textContent = profile.name;
   }
   if (profile.bio) {
-    document.getElementById("hero-bio").textContent = profile.bio;
+    document.getElementById("hero-bio").innerHTML = profile.bio;
   }
   const linksEl = document.getElementById("hero-links");
   for (const link of profile.links || []) {
