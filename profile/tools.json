@@ -1,0 +1,9 @@
+{
+  "tools": [
+    {
+      "title": "CS336 Learning Tools",
+      "description": "Interactive quizzes for Stanford CS336.",
+      "url": "tools/cs336-quiz/"
+    }
+  ]
+}

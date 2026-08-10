@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS336 Quiz</title>
+  <link rel="stylesheet" href="css/style.css?v=study3">
+</head>
+<body>
+  <div class="container">
+    <header class="quiz-header">
+      <a href="index.html" class="back-link">All lectures</a>
+      <h1 id="quiz-title">Loading&hellip;</h1>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+        <span id="progress-text" class="progress-text"></span>
+      </div>
+      <p class="kbd-hint">Keyboard: <kbd>1</kbd>&ndash;<kbd>4</kbd> select an answer &middot; <kbd>Enter</kbd> check / next</p>
+    </header>
+
+    <main id="quiz-main">
+      <div id="question-area"></div>
+      <div id="result-area" class="hidden"></div>
+    </main>
+  </div>
+
+  <script src="data/lectures.js?v=study2"></script>
+  <script src="js/quiz.js?v=study2"></script>
+</body>
+</html>
