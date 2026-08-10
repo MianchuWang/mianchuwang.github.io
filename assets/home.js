@@ -19,6 +19,19 @@ function renderList(posts) {
   return ul;
 }
 
+function renderTools(tools) {
+  const ul = document.createElement("ul");
+  ul.className = "pub-list";
+  for (const tool of tools) {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <div class="pub-title"><a href="${tool.url}">${tool.title}</a></div>
+      <div class="pub-meta">${tool.description || ""}</div>`;
+    ul.appendChild(li);
+  }
+  return ul;
+}
+
 function renderPublications(pubs) {
   const ul = document.createElement("ul");
   ul.className = "pub-list";
@@ -46,6 +59,13 @@ function renderProfile(profile) {
   }
   const linksEl = document.getElementById("hero-links");
   for (const link of profile.links || []) {
+    // Entries without a url render as plain text (e.g. spam-safe email).
+    if (!link.url) {
+      const span = document.createElement("span");
+      span.textContent = link.label;
+      linksEl.appendChild(span);
+      continue;
+    }
     const a = document.createElement("a");
     a.href = link.url;
     a.textContent = link.label;
@@ -84,15 +104,18 @@ function renderHeroCv(profile) {
 async function main() {
   let manifest = { posts: [] };
   let pubData = { publications: [] };
+  let toolData = { tools: [] };
   let profile = {};
   try {
-    const [manifestRes, pubRes, profileRes] = await Promise.all([
+    const [manifestRes, pubRes, toolRes, profileRes] = await Promise.all([
       fetch("writings/manifest.json", { cache: "no-cache" }),
-      fetch("content/publications.json", { cache: "no-cache" }),
-      fetch("content/profile.json", { cache: "no-cache" }),
+      fetch("profile/publications.json", { cache: "no-cache" }),
+      fetch("profile/tools.json", { cache: "no-cache" }),
+      fetch("profile/profile.json", { cache: "no-cache" }),
     ]);
     manifest = await manifestRes.json();
     if (pubRes.ok) pubData = await pubRes.json();
+    if (toolRes.ok) toolData = await toolRes.json();
     if (profileRes.ok) profile = await profileRes.json();
     renderProfile(profile);
     renderHeroCv(profile);
@@ -103,7 +126,8 @@ async function main() {
 
   const posts = manifest.posts || [];
   const pubs = pubData.publications || [];
-  if (posts.length === 0 && pubs.length === 0) {
+  const tools = toolData.tools || [];
+  if (posts.length === 0 && pubs.length === 0 && tools.length === 0) {
     listEl.innerHTML = `<div class="empty-note">Nothing here yet.</div>`;
     return;
   }
@@ -120,9 +144,19 @@ async function main() {
   if (pubs.length > 0) {
     const h2 = document.createElement("h2");
     h2.className = "section-title";
+    h2.id = "publications";
     h2.textContent = "Publications";
     frag.appendChild(h2);
     frag.appendChild(renderPublications(pubs));
+  }
+
+  if (tools.length > 0) {
+    const h2 = document.createElement("h2");
+    h2.className = "section-title";
+    h2.id = "tool-set";
+    h2.textContent = "Tool Set";
+    frag.appendChild(h2);
+    frag.appendChild(renderTools(tools));
   }
 
   listEl.replaceChildren(frag);

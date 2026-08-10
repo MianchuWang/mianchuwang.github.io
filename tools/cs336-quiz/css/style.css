@@ -1,0 +1,361 @@
+/* ============================================================
+   CS336 Quiz — Study theme
+   Evidence-based design for learning: readable measure (~70ch),
+   calm palette, minimal extraneous load, non-color status cues.
+   ============================================================ */
+
+:root {
+  --bg: #faf8f5;          /* warm paper */
+  --surface: #ffffff;
+  --ink: #24303c;         /* soft black */
+  --muted: #5f6b76;
+  --line: #e2ddd4;        /* warm hairline */
+  --accent: #2563a8;      /* calm blue */
+  --accent-dark: #1d4f88;
+  --accent-soft: #eef4fa;
+  --good: #1a7f4b;
+  --good-soft: #edf7f1;
+  --good-line: #bfe0cd;
+  --bad: #b3403a;
+  --bad-soft: #faf1f0;
+  --bad-line: #e8c8c5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.0625rem;            /* 17px body */
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 720px;                /* keeps text within ~70ch  */
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.hidden { display: none !important; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Landing ---------- */
+
+.site-header { margin-bottom: 40px; }
+
+.site-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.subtitle { color: var(--muted); font-size: 1rem; margin-top: 6px; }
+
+.lecture-list {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.lecture-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.lecture-row:last-child { border-bottom: none; }
+
+.lecture-row-tag {
+  flex-shrink: 0;
+  width: 92px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lecture-row-topic {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quiz-links { display: flex; gap: 8px; flex-shrink: 0; }
+
+.quiz-link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1.5px solid var(--line);
+  border-radius: 7px;
+  padding: 3px 12px;
+}
+
+.quiz-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
+
+.site-footer {
+  margin-top: 56px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+/* ---------- Quiz header ---------- */
+
+.quiz-header { margin-bottom: 28px; }
+
+.back-link { font-size: 0.875rem; color: var(--muted); display: inline-block; margin-bottom: 14px; }
+.back-link:before { content: "\2190\00a0"; }
+.back-link:hover { color: var(--accent); }
+
+.quiz-header h1 { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 16px; }
+
+.progress-wrap { display: flex; align-items: center; gap: 14px; }
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.kbd-hint { margin-top: 10px; font-size: 0.8125rem; color: var(--muted); }
+.kbd-hint kbd {
+  font-family: inherit;
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 0 5px;
+}
+
+/* ---------- Question ---------- */
+
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.question-type {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.question-text {
+  font-size: 1.1875rem;
+  font-weight: 650;
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.options { display: grid; gap: 10px; }
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding: 13px 16px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.option:hover:not(.locked) { border-color: var(--accent); background: var(--accent-soft); }
+
+.option.selected { border-color: var(--accent); background: var(--accent-soft); }
+
+.option.locked { cursor: default; }
+
+.option.reveal-correct { border-color: var(--good); background: var(--good-soft); }
+.option.reveal-incorrect { border-color: var(--bad); background: var(--bad-soft); }
+
+.option-letter {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.option.selected .option-letter { border-color: var(--accent); color: var(--accent); }
+
+.option.reveal-correct .option-letter {
+  border-color: var(--good);
+  background: var(--good);
+  color: #ffffff;
+}
+
+.option.reveal-incorrect .option-letter {
+  border-color: var(--bad);
+  background: var(--bad);
+  color: #ffffff;
+}
+
+/* ---------- Feedback ---------- */
+
+.explanation {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  font-size: 1rem;
+}
+
+.explanation .verdict { font-weight: 650; margin-bottom: 8px; }
+.explanation.correct .verdict { color: var(--good); }
+.explanation.incorrect .verdict { color: var(--bad); }
+
+/* the explanation body stays calm and neutral for focused reading */
+.explanation > div:last-child {
+  color: var(--ink);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+}
+
+.quiz-actions { margin-top: 22px; display: flex; justify-content: flex-end; gap: 10px; }
+
+.btn {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 10px 24px;
+  min-height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-primary { background: var(--accent); color: #ffffff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-primary:disabled { background: var(--line); color: var(--muted); cursor: default; }
+
+.btn-secondary { background: var(--surface); color: var(--accent); border-color: var(--line); }
+.btn-secondary:hover { border-color: var(--accent); }
+
+/* ---------- Results ---------- */
+
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 36px 28px;
+  text-align: center;
+}
+
+.result-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.result-score {
+  font-size: 3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.result-message { margin-top: 8px; font-size: 1rem; color: var(--muted); }
+
+.review-section { margin-top: 36px; text-align: left; }
+
+.review-section h2 { font-size: 1.1875rem; font-weight: 700; margin-bottom: 14px; }
+
+.review-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.review-item .rq { font-weight: 650; margin-bottom: 8px; }
+.review-item .ra { color: var(--muted); margin-bottom: 4px; }
+.review-item .re {
+  margin-top: 10px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+}
+
+@media (max-width: 600px) {
+  .container { padding: 24px 16px 60px; }
+  .question-card { padding: 20px 16px; }
+  .kbd-hint { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill { transition: none; }
+}

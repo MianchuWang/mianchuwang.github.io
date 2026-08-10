@@ -45,12 +45,22 @@ In the repo settings on GitHub: **Settings → Pages → Source → GitHub Actio
 ## Layout
 
 ```
+profile/           ← homepage content (JSON, no rebuild needed)
+  profile.json         name, bio, links, education & experience (home hero)
+  publications.json    publication list shown on the home page
+  tools.json           "Tool Set" section: interactive tools hosted on the site
 writings/          ← posts (Markdown + frontmatter); manifest.json is generated
-content/profile.json       ← name, bio, education & experience (home hero)
-content/publications.json  ← publication list shown on the home page
+tools/             ← self-contained web tools, one folder each
+  cs336-quiz/          CS336 Learning Tools (quiz app, see its README)
 index.html         ← home page (post list)
 post.html          ← article page (Markdown renderer, math, TOC)
 assets/            ← styles and JS
 scripts/           ← manifest generator
 .github/workflows/ ← auto-deploy on push
 ```
+
+## Adding a tool
+
+Drop a self-contained static app into `tools/<name>/` and add an entry to
+`profile/tools.json` (`title`, `description`, `url`). It appears in the
+home page's **Tool Set** section.

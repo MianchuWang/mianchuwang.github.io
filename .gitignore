@@ -1,2 +1,21 @@
+# macOS
 .DS_Store
+._*
+
+# Windows
+Thumbs.db
+
+# Python (scripts/)
+__pycache__/
+*.py[cod]
+
+# Local tooling — machine-specific Claude Code config (absolute paths inside)
 .claude/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
