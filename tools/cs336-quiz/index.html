@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CS336 Quiz</title>
-  <link rel="stylesheet" href="css/style.css?v=study3">
+  <title>CS336 Learning Tools</title>
+  <link rel="stylesheet" href="css/style.css?v=study4">
 </head>
 <body>
   <div class="container">
     <header class="site-header">
       <a href="../../" class="back-link">Mianchu Wang</a>
-      <h1>CS336 Quiz</h1>
-      <p class="subtitle">Self-test and review for Stanford CS336: Language Modeling from Scratch</p>
+      <h1>CS336 Learning Tools</h1>
+      <p class="subtitle">Self-test quizzes for <a href="https://cs336.stanford.edu/" target="_blank" rel="noopener">Stanford CS336: Language Modeling from Scratch</a>. <strong>Basics</strong> covers each lecture's core knowledge points, for review; <strong>Advances</strong> targets leading-lab interview difficulty, with extra material to test how deep your understanding goes.</p>
     </header>
 
     <main>
@@ -23,10 +23,10 @@
     </footer>
   </div>
 
-  <script src="data/lectures.js?v=study2"></script>
+  <script src="data/lectures.js?v=study3"></script>
   <script>
     // Compact view: one row per lecture, its quizzes as inline links.
-    // Quiz titles follow "Topic — Variant"; descriptions become tooltips.
+    // Quiz titles follow "Topic — Variant"; key topics listed under the name.
     const list = document.getElementById('lecture-list');
     const groups = new Map();
     window.LECTURES.forEach(lec => {
@@ -34,19 +34,22 @@
       groups.get(lec.tag).push(lec);
     });
     groups.forEach((quizzes, tag) => {
-      const parts = quizzes[0].title.split('—');
-      const topic = parts[0].trim();
+      const topic = quizzes[0].title.split('—')[0].trim();
+      const topics = quizzes.find(q => q.topics)?.topics || [];
       const row = document.createElement('div');
       row.className = 'lecture-row';
       const links = quizzes.map(q => {
         const variant = (q.title.split('—')[1] || 'Quiz').trim();
-        const tip = q.description + ' (' + q.questionCount + ' questions)';
-        return '<a class="quiz-link" href="quiz.html?lecture=' + encodeURIComponent(q.id) +
-               '" title="' + tip.replace(/"/g, '&quot;') + '">' + variant + '</a>';
+        return '<a class="quiz-link" href="quiz.html?lecture=' + encodeURIComponent(q.id) + '">' + variant + '</a>';
       }).join('');
+      const points = topics.length
+        ? '<div class="lecture-row-points">' + topics.join(' &middot; ') + '</div>'
+        : '';
       row.innerHTML =
         '<span class="lecture-row-tag">' + tag + '</span>' +
-        '<span class="lecture-row-topic">' + topic + '</span>' +
+        '<div class="lecture-row-main">' +
+          '<div class="lecture-row-topic">' + topic + '</div>' + points +
+        '</div>' +
         '<span class="quiz-links">' + links + '</span>';
       list.appendChild(row);
     });

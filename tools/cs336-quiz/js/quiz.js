@@ -1,5 +1,6 @@
 // Generic quiz engine. Loads a lecture's question file based on ?lecture=<id>,
 // renders one question at a time, and always shows the explanation after checking.
+// Answered questions can be revisited: navigation restores the locked state.
 (function () {
   const params = new URLSearchParams(window.location.search);
   const lectureId = params.get("lecture");
@@ -29,9 +30,9 @@
 
   let quiz, questions;
   let current = 0;
-  let checked = false;
   const selections = []; // per-question Set of selected ORIGINAL option indices
-  const results = [];    // per-question boolean
+  const answered = [];   // per-question boolean: has been checked
+  const results = [];    // per-question boolean: was correct
   const orders = [];     // per-question display order (shuffled original indices)
 
   const LETTERS = ["A", "B", "C", "D", "E", "F"];
@@ -49,14 +50,16 @@
     quiz = window.QUIZ_DATA[lectureId];
     questions = quiz.questions;
     titleEl.textContent = quiz.title;
-    document.title = quiz.title + " · CS336 Quiz";
+    document.title = quiz.title + " · CS336 Learning Tools";
     document.addEventListener("keydown", onKeydown);
     renderQuestion();
   }
 
-  // Keyboard flow: 1-4 / a-d toggle an answer, Enter checks or advances.
+  // Keyboard flow: 1-4 / a-d toggle an answer, Enter checks or advances,
+  // arrow keys move between questions.
   function onKeydown(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!resultArea.classList.contains("hidden")) return;
     const keyMap = { "1": 0, "2": 1, "3": 2, "4": 3, "a": 0, "b": 1, "c": 2, "d": 3 };
     const k = e.key.toLowerCase();
     if (k in keyMap) {
@@ -72,11 +75,23 @@
         active.click();
         e.preventDefault();
       }
+    } else if (e.key === "ArrowLeft" && current > 0) {
+      goTo(current - 1);
+      e.preventDefault();
+    } else if (e.key === "ArrowRight" && answered[current] && current < questions.length - 1) {
+      goTo(current + 1);
+      e.preventDefault();
     }
   }
 
+  function goTo(index) {
+    current = index;
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function updateProgress() {
-    const done = Math.min(current + (checked ? 1 : 0), questions.length);
+    const done = answered.filter(Boolean).length;
     progressFill.style.width = (100 * done / questions.length) + "%";
     progressText.textContent = "Question " + (current + 1) + " of " + questions.length;
   }
@@ -87,11 +102,12 @@
   }
 
   function renderQuestion() {
-    checked = false;
     updateProgress();
     const q = questions[current];
-    const sel = new Set();
-    selections[current] = sel;
+    // Reuse this attempt's shuffle and selections so revisiting is stable.
+    const order = orders[current] || (orders[current] = shuffled(q.options.length));
+    const sel = selections[current] || (selections[current] = new Set());
+    const isAnswered = !!answered[current];
 
     const card = document.createElement("div");
     card.className = "question-card";
@@ -103,10 +119,6 @@
     const optionsWrap = document.createElement("div");
     optionsWrap.className = "options";
 
-    // Shuffle option display order so the answer position carries no signal.
-    const order = shuffled(q.options.length);
-    orders[current] = order;
-
     order.forEach((i, pos) => {
       const opt = q.options[i];
       const btn = document.createElement("button");
@@ -114,8 +126,9 @@
       btn.className = "option";
       btn.dataset.index = i;
       btn.innerHTML = '<span class="option-letter">' + LETTERS[pos] + "</span><span>" + escapeHtml(opt) + "</span>";
+      if (!isAnswered && sel.has(i)) btn.classList.add("selected");
       btn.addEventListener("click", () => {
-        if (checked) return;
+        if (answered[current]) return;
         if (q.type === "single") {
           sel.clear();
           optionsWrap.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
@@ -138,24 +151,25 @@
     const actions = document.createElement("div");
     actions.className = "quiz-actions";
 
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "btn btn-secondary";
+    prevBtn.textContent = "Previous";
+    prevBtn.addEventListener("click", () => goTo(current - 1));
+
     const checkBtn = document.createElement("button");
     checkBtn.className = "btn btn-primary";
     checkBtn.textContent = "Check answer";
-    checkBtn.disabled = true;
+    checkBtn.disabled = sel.size === 0;
 
     const nextBtn = document.createElement("button");
     nextBtn.className = "btn btn-primary hidden";
     nextBtn.textContent = current === questions.length - 1 ? "See results" : "Next question";
 
-    checkBtn.addEventListener("click", () => {
-      if (sel.size === 0 || checked) return;
-      checked = true;
-      const isCorrect = setEqual(sel, q.correct);
-      results[current] = isCorrect;
-
+    function reveal(scroll) {
       optionsWrap.querySelectorAll(".option").forEach(o => {
         const i = Number(o.dataset.index);
         o.classList.add("locked");
+        o.classList.remove("selected");
         const letterEl = o.querySelector(".option-letter");
         if (q.correct.includes(i)) {
           o.classList.add("reveal-correct");
@@ -166,6 +180,7 @@
         }
       });
 
+      const isCorrect = results[current];
       const correctLetters = q.correct
         .map(i => order.indexOf(i))
         .sort((a, b) => a - b)
@@ -179,26 +194,34 @@
 
       checkBtn.classList.add("hidden");
       nextBtn.classList.remove("hidden");
+      if (scroll) explanationEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (sel.size === 0 || answered[current]) return;
+      answered[current] = true;
+      results[current] = setEqual(sel, q.correct);
       updateProgress();
-      explanationEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      reveal(true);
     });
 
     nextBtn.addEventListener("click", () => {
       if (current === questions.length - 1) {
         renderResults();
       } else {
-        current += 1;
-        renderQuestion();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        goTo(current + 1);
       }
     });
 
+    if (current > 0) actions.appendChild(prevBtn);
     actions.appendChild(checkBtn);
     actions.appendChild(nextBtn);
     card.appendChild(actions);
 
     questionArea.innerHTML = "";
     questionArea.appendChild(card);
+
+    if (isAnswered) reveal(false);
   }
 
   function renderResults() {
@@ -248,9 +271,10 @@
     resultArea.innerHTML = html;
     document.getElementById("retry-btn").addEventListener("click", () => {
       current = 0;
-      checked = false;
       results.length = 0;
       selections.length = 0;
+      answered.length = 0;
+      orders.length = 0;
       resultArea.classList.add("hidden");
       resultArea.innerHTML = "";
       questionArea.classList.remove("hidden");

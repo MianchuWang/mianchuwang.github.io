@@ -88,14 +88,21 @@ button:focus-visible, a:focus-visible {
   color: var(--muted);
 }
 
+.lecture-row-main { flex: 1; min-width: 0; }
+
 .lecture-row-topic {
-  flex: 1;
   font-size: 0.9375rem;
   font-weight: 650;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.lecture-row-points {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
 .quiz-links { display: flex; gap: 8px; flex-shrink: 0; }
