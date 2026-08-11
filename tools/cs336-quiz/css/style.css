@@ -122,6 +122,19 @@ button:focus-visible, a:focus-visible {
   text-decoration: none;
 }
 
+.quiz-link.disabled {
+  color: var(--muted);
+  border-color: var(--line);
+  background: transparent;
+  cursor: default;
+  opacity: 0.6;
+}
+
+.quiz-link.disabled:hover {
+  border-color: var(--line);
+  background: transparent;
+}
+
 .site-footer {
   margin-top: 56px;
   padding-top: 16px;
@@ -200,6 +213,24 @@ button:focus-visible, a:focus-visible {
   font-weight: 650;
   line-height: 1.55;
   margin-bottom: 20px;
+}
+
+.question-figure {
+  margin: 0 0 20px;
+}
+
+.question-figure img {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 6px;
+}
+
+.question-figure figcaption {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
 }
 
 .options { display: grid; gap: 10px; }

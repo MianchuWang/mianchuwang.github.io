@@ -12,7 +12,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
         "Over a model's lifetime, total inference cost typically exceeds the one-time training cost",
         "Inference is used beyond chat: evaluation, batch data processing, and reinforcement learning rollouts all require generation",
         "Test-time compute (long chains of thought, agents) multiplies the number of generated tokens per query",
-        "Inference requires computing gradients, which is more expensive than training"
+        "Inference requires computing gradients for the KV cache, which is more expensive than training forward passes"
       ],
       correct: [0, 1, 2],
       explanation: "Training is a one-time cost, but inference happens every time anyone uses the model — so lifetime inference cost dominates. Generation also shows up in evals, batch processing, and RL sampling, and test-time compute scaling (reasoning models, agents) further multiplies token counts. Inference does NOT compute gradients — that is exactly why it is cheaper per token than training (roughly 2 FLOPs/param/token vs. 6 for training)."
@@ -22,7 +22,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       question: "What does Time To First Token (TTFT) measure?",
       options: [
         "The time from sending a request until the first output token is produced",
-        "The average time between consecutive generated tokens",
+        "The average time between consecutive generated tokens once streaming has started",
         "The total time to generate the full response",
         "The time to load model weights onto the GPU"
       ],
@@ -34,8 +34,8 @@ window.QUIZ_DATA["lecture10-basics"] = {
       question: "Which metric matters MOST for offline batch data processing (e.g., generating synthetic data at scale)?",
       options: [
         "Throughput (total tokens per second across all requests)",
-        "Time to first token",
-        "Per-token latency for a single stream",
+        "Time to first token, which dominates the cost of batch jobs",
+        "Per-token latency for a single generation stream",
         "Model load time"
       ],
       correct: [0],
@@ -57,7 +57,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Compared to training, why is inference in some ways HARDER to do efficiently, even though it uses fewer FLOPs per token?",
       options: [
-        "Generation is sequential — each token depends on the previous one — so you cannot parallelize across time steps of a single sequence",
+        "Generation is sequential, so the time steps of a single sequence cannot be parallelized",
         "Inference must store optimizer states for every request",
         "Inference requires higher numerical precision than training",
         "Unlike training, inference cannot use batching, so the hardware always runs at batch size 1"
@@ -72,7 +72,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       question: "Inference has two phases: prefill and decode. What characterizes the PREFILL phase?",
       options: [
         "All prompt tokens are known and processed in parallel, so it is typically compute-bound",
-        "Tokens are generated one at a time, so it is typically memory-bound",
+        "Tokens are generated one at a time from the prompt, so it is typically memory-bound",
         "It only reads the KV cache but never writes it",
         "It runs on the CPU while decode runs on the GPU"
       ],
@@ -83,7 +83,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Why is the DECODE (generation) phase typically memory-bound rather than compute-bound?",
       options: [
-        "Each step processes just one new token per sequence, so the arithmetic looks like matrix-vector products: every parameter is read from memory but used for very few FLOPs",
+        "Each step processes one new token per sequence, so every parameter is read from memory but used for very few FLOPs",
         "The KV cache must be recomputed from scratch at every step, wasting most of the compute budget",
         "The softmax operation dominates the runtime because it cannot use tensor cores",
         "Decode uses higher precision arithmetic than prefill"
@@ -97,7 +97,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       options: [
         "(Bytes of parameters + bytes of KV cache that must be read) ÷ memory bandwidth",
         "Total FLOPs ÷ peak FLOP/s of the accelerator",
-        "The number of CUDA kernels launched",
+        "The number of CUDA kernels launched per transformer layer during the decoding step",
         "Vocabulary size ÷ clock speed"
       ],
       correct: [0],
@@ -121,7 +121,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       question: "An H100 delivers roughly 989 TFLOP/s (dense bf16) with about 3.35 TB/s of HBM bandwidth. What is its approximate accelerator intensity (FLOPs per byte), and what does it mean?",
       options: [
         "About 295 — workloads with arithmetic intensity below ~295 FLOPs/byte will be memory-bound on this GPU",
-        "About 295 — workloads with intensity below ~295 will be compute-bound",
+        "About 295 — workloads with arithmetic intensity below ~295 FLOPs/byte will be compute-bound on this GPU",
         "About 3.4 — almost every workload is compute-bound",
         "About 989 — the intensity equals the TFLOP rating"
       ],
@@ -144,7 +144,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What is the arithmetic intensity of a matrix–VECTOR multiply (i.e., decoding with batch size 1), and what does it imply?",
       options: [
-        "About 1 FLOP/byte — hopelessly memory-bound; the GPU's compute units sit mostly idle",
+        "About 1 FLOP/byte",
         "About 300 FLOPs/byte — right at the compute/memory boundary",
         "It is infinite, since no memory needs to be read",
         "About 100 FLOPs/byte — mildly compute-bound"
@@ -156,7 +156,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "How can the MLP (feed-forward) layers be made compute-bound during generation?",
       options: [
-        "Increase the batch size — process many sequences' tokens at once so each weight read is amortized over more FLOPs",
+        "Increase the batch size",
         "Increase the sequence length of a single request",
         "Use a larger vocabulary",
         "Switch from bf16 to fp32 weights"
@@ -168,7 +168,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Why does increasing the batch size NOT fix the memory-bound nature of the ATTENTION computation during decoding?",
       options: [
-        "Each sequence has its own KV cache, so attention reads scale linearly with batch size — there is no sharing to amortize, and intensity stays roughly constant",
+        "Each sequence has its own KV cache, so attention reads scale linearly with batch size",
         "Attention is already compute-bound during decoding, so larger batches only add scheduling overhead",
         "The softmax cannot be batched across sequences",
         "Larger batches shorten each sequence's KV cache, reducing the useful FLOPs available"
@@ -184,7 +184,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
         "The key and value vectors of every previous token, for each layer and each KV head",
         "The model's weight matrices in compressed form",
         "The logits of all previously generated tokens",
-        "The query vectors of all previous tokens"
+        "The query vectors of every previous token, for each layer and each head"
       ],
       correct: [0],
       explanation: "To attend over the past without recomputing it, each generated token's keys and values are cached per layer per KV head. Queries do not need caching — only the CURRENT token's query is ever used; past queries are never needed again."
@@ -193,7 +193,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Why is the KV cache needed at all during autoregressive generation?",
       options: [
-        "Without it, each new token would require recomputing keys and values for the entire prefix, raising the total cost of generating T tokens from O(T²) to O(T³)",
+        "Without it, generating T tokens would require recomputing the entire prefix each step, costing O(T³) instead of O(T²)",
         "It stores gradients needed for backpropagation",
         "It prevents the model from attending to future tokens",
         "It reduces the memory footprint of generation by compressing past activations into fewer bytes"
@@ -220,7 +220,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
         "Longer sequence lengths",
         "More concurrent sequences (larger batch)",
         "More layers or more KV heads",
-        "A larger vocabulary"
+        "A larger vocabulary in the tokenizer"
       ],
       correct: [0, 1, 2],
       explanation: "KV cache = batch × seq_len × 2 × layers × kv_heads × head_dim × bytes. Vocabulary size affects the embedding/output matrices, not the KV cache. The batch and sequence-length terms are why long-context, high-concurrency serving is memory-hungry — KV can exceed the weights themselves."
@@ -229,10 +229,10 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "In practice, what usually limits the maximum batch size (concurrency) a serving GPU can sustain?",
       options: [
-        "GPU memory: weights are fixed, so the growing per-sequence KV cache determines how many sequences fit",
+        "GPU memory: weights are fixed, so KV cache growth determines how many sequences fit",
         "The operating system's process limit",
         "The number of CUDA cores",
-        "Network bandwidth to the client"
+        "Peak network bandwidth between the serving GPU node and its downstream clients"
       ],
       correct: [0],
       explanation: "Weights occupy a fixed chunk of HBM; everything left goes to KV caches, which grow linearly in batch size and sequence length. Since larger batches are exactly what's needed for throughput, KV memory is the binding constraint — motivating KV-shrinking techniques (GQA, MLA, quantized KV, paging)."
@@ -243,8 +243,8 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What is the main problem with naive STATIC batching of generation requests?",
       options: [
-        "Sequences finish at different times, so short requests sit idle waiting for the longest one, and new requests must wait for the whole batch to complete",
-        "It requires each request to have exactly the same prompt",
+        "Sequences finish at different times, so finished slots sit idle and new requests wait for the whole batch",
+        "It requires every request in the batch to share exactly the same prompt and sampling parameters",
         "It cannot run on more than one GPU",
         "It makes generation non-deterministic"
       ],
@@ -255,7 +255,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What is the key idea of CONTINUOUS batching (e.g., Orca)?",
       options: [
-        "Schedule at the granularity of individual iterations: after each decoding step, finished sequences leave the batch and newly arrived requests join immediately",
+        "Iteration-level scheduling: after each decode step, finished sequences leave and new requests join immediately",
         "Pad all sequences in the batch to the same maximum length so the tensors stay rectangular",
         "Batch only requests that share the same prompt",
         "Run prefill and decode for each request back-to-back on a dedicated stream to minimize its latency"
@@ -268,9 +268,9 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What memory problem motivated PagedAttention (vLLM)?",
       options: [
-        "Pre-allocating contiguous KV cache buffers for the maximum possible length wastes huge amounts of memory through internal and external fragmentation",
+        "Contiguous max-length KV buffers waste memory through internal and external fragmentation",
         "The KV cache was stored on disk, which is too slow",
-        "Model weights were duplicated once per request",
+        "Model weights were duplicated once per active request, quickly exhausting the GPU's HBM",
         "Attention scores overflowed in fp16"
       ],
       correct: [0],
@@ -280,7 +280,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "How does PagedAttention organize the KV cache?",
       options: [
-        "In small fixed-size blocks (pages) that need not be contiguous, with a per-request block table mapping logical positions to physical blocks — like virtual memory in an OS",
+        "In small fixed-size blocks that need not be contiguous, mapped through a per-request block table",
         "In one contiguous pre-allocated region per request, sized for the maximum possible sequence length",
         "Entirely in CPU RAM, streamed to the GPU on demand",
         "In a compressed low-rank form that is expanded on the fly during attention"
@@ -292,9 +292,9 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Besides reducing fragmentation, what sharing capability does paging the KV cache enable?",
       options: [
-        "Multiple sequences can share the physical KV blocks of a common prefix (e.g., a system prompt or parallel samples), using copy-on-write when they diverge",
+        "Sequences sharing a common prefix can share physical KV blocks, with copy-on-write on divergence",
         "Two different models can share the same weights",
-        "Requests can share sampled tokens to finish faster",
+        "Concurrent requests can share each other's sampled tokens to finish long generations faster",
         "The GPU can share memory with the network card"
       ],
       correct: [0],
@@ -307,7 +307,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
         "Continuous batching",
         "PagedAttention",
         "Speculative decoding (with correct rejection sampling)",
-        "Quantizing weights to int4"
+        "Quantizing the weights to int4 with group-wise scales"
       ],
       correct: [0, 1, 2],
       explanation: "Batching/scheduling and KV memory layout don't change the math, and speculative decoding's modified rejection sampling provably preserves the target model's distribution. Quantization is LOSSY — it changes the weights and therefore the outputs (hopefully negligibly). The lecture's framing: systems tricks are exact; model modifications (quantization, pruning, architecture changes) are lossy."
@@ -318,7 +318,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What is the core idea of speculative decoding?",
       options: [
-        "A cheap draft model proposes several tokens sequentially; the expensive target model then verifies them all in a single parallel pass, accepting a prefix of them",
+        "A cheap draft model proposes several tokens; the target verifies them all in one parallel pass, accepting a prefix",
         "The target model generates several candidate continuations in parallel and a reward model picks the best one",
         "The model skips every other token and a small model fills in the gaps afterward",
         "The prompt is prefilled by a small model so the large model only handles generation"
@@ -330,10 +330,10 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Why is verifying K draft tokens with the target model roughly as cheap as generating a single token?",
       options: [
-        "Decoding is memory-bound: the dominant cost is reading the weights, which is the same whether the forward pass processes 1 token or K tokens in parallel",
+        "Decoding is memory-bound: weight reads cost the same whether the pass processes 1 token or K tokens",
         "The target model uses a smaller vocabulary during verification",
         "Verification skips the attention layers",
-        "The draft model shares its KV cache with the target model"
+        "The draft model shares its KV cache with the target model, so verification skips attention entirely"
       ],
       correct: [0],
       explanation: "Processing K tokens at once is a small parallel (prefill-like) computation. Since the bottleneck is streaming the weights from HBM — not FLOPs — the extra arithmetic for K tokens is essentially free while intensity is below the hardware's compute/memory ratio."
@@ -354,8 +354,8 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "When a draft token is REJECTED in speculative sampling, what happens?",
       options: [
-        "A replacement token is sampled from the normalized residual distribution max(0, p − q), and the remaining draft tokens are discarded",
-        "The entire response is restarted from scratch",
+        "A replacement is sampled from norm(max(0, p − q)) and the remaining draft tokens are discarded",
+        "The entire response is restarted from scratch with a freshly initialized draft model",
         "The draft token is kept anyway but flagged",
         "The target model is fine-tuned on the error"
       ],
@@ -366,10 +366,10 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What property makes a GOOD draft model for speculative decoding?",
       options: [
-        "Much cheaper per token than the target while matching its distribution closely enough for a high acceptance rate",
+        "Much cheaper per token than the target while matching its distribution closely",
         "Being larger than the target model to guarantee quality",
         "Having a completely different vocabulary from the target",
-        "Producing deliberately random tokens to explore alternatives"
+        "Producing deliberately randomized tokens so verification explores more diverse alternatives"
       ],
       correct: [0],
       explanation: "Speedup ≈ (accepted tokens per verification) balanced against draft cost. You want the draft cheap (e.g., a small model from the same family, or lightweight heads on the target's own hidden states as in Medusa/EAGLE) yet aligned with the target so most proposals are accepted. A mismatched or random draft would be rejected constantly, giving no speedup."
@@ -394,7 +394,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
         "A single key head and a single value head",
         "The query projections",
         "The MLP weights",
-        "The positional embeddings"
+        "The positional embeddings across all layers"
       ],
       correct: [0],
       explanation: "MQA keeps many query heads but only ONE K head and ONE V head. The KV cache shrinks by a factor of n_heads (e.g., 32×), directly attacking the memory-bound attention bottleneck — at some cost to quality since all queries see the same K/V."
@@ -403,9 +403,9 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "How does Grouped-Query Attention (GQA) relate to MHA and MQA?",
       options: [
-        "It interpolates: query heads are split into groups, each group sharing one KV head — fewer KV heads than MHA, more than MQA",
+        "It interpolates: query heads are split into groups, each group sharing one KV head",
         "It removes query heads and keeps all KV heads",
-        "It is identical to MQA but applied only to the first layer",
+        "It is identical to MQA except that it is applied only to the first transformer layer",
         "It groups tokens rather than heads"
       ],
       correct: [0],
@@ -415,7 +415,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "By reducing the number of KV heads, what does GQA/MQA do to the arithmetic intensity of attention during decoding?",
       options: [
-        "Increases it — the same attention FLOPs are performed per query head while far fewer KV bytes are read, moving attention closer to compute-bound",
+        "Increases it: far fewer KV bytes are read while attention FLOPs stay the same",
         "Decreases it — fewer heads means fewer FLOPs per byte",
         "Leaves it unchanged, since intensity only depends on batch size",
         "Makes it infinite, eliminating memory traffic entirely"
@@ -427,7 +427,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What is the key idea of Multi-head Latent Attention (MLA), used in DeepSeek-V2/V3?",
       options: [
-        "Compress keys and values into a single low-rank latent vector per token; cache only the small latent and expand to full K/V via learned up-projections",
+        "Compress keys and values into a single low-rank latent per token; cache only the latent and expand via up-projections",
         "Group query heads so that several of them share one full-rank KV head, reducing the number of cached heads",
         "Store the KV cache in int4 precision and dequantize it during attention",
         "Use one attention head for the entire model"
@@ -439,10 +439,10 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Why does MLA need a 'decoupled' RoPE design?",
       options: [
-        "RoPE's position-dependent rotation doesn't commute with the low-rank down/up-projections, so a separate small set of dimensions carries positional information via RoPE while the compressed latent stays position-independent",
+        "RoPE's rotation doesn't commute with the low-rank projections, so a few separate dimensions carry position via RoPE",
         "RoPE requires fp32 precision which MLA forbids",
         "RoPE only works with exactly 64 attention heads",
-        "MLA removes positions entirely, so RoPE is discarded"
+        "MLA removes positional information entirely, so RoPE is simply discarded from the architecture"
       ],
       correct: [0],
       explanation: "If keys were RoPE-rotated, the rotation (which depends on each token's position) would sit between the latent and the up-projection, preventing the weight-absorption trick that makes MLA efficient. DeepSeek's fix: keep a few extra 'rope' dimensions per key/query that carry position, concatenated with the position-free compressed part."
@@ -452,9 +452,9 @@ window.QUIZ_DATA["lecture10-basics"] = {
       question: "Which techniques reduce KV cache memory? (Select all that apply)",
       options: [
         "Grouped-Query Attention (fewer KV heads)",
-        "Sliding-window / local attention in some layers (bounded cache per layer)",
-        "Sharing KV caches across adjacent layers (cross-layer attention, as in Character.AI's stack)",
-        "Increasing the model's hidden dimension"
+        "Sliding-window / local attention in some layers",
+        "Sharing KV caches across adjacent layers (cross-layer attention)",
+        "Increasing the model's hidden dimension to pack more into each vector"
       ],
       correct: [0, 1, 2],
       explanation: "GQA cuts the head dimension of the cache; sliding-window layers cap cached tokens at the window size (e.g., interleaving local:global layers, as in Character.AI or Gemma-style stacks); cross-layer KV sharing divides the layer factor. Increasing hidden size GROWS the cache. These multiply: production stacks combine them for order-of-magnitude reductions."
@@ -463,8 +463,8 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What is the drawback of using ONLY sliding-window (local) attention in every layer?",
       options: [
-        "The model loses direct access to context beyond the window, hurting long-range recall, so designs interleave local layers with occasional full/global attention layers",
-        "The KV cache grows faster than with full attention",
+        "The model loses direct access to context beyond the window, hurting long-range recall",
+        "The KV cache grows faster than with full attention because windows overlap",
         "It cannot be parallelized during prefill",
         "It requires a separate GPU per window"
       ],
@@ -477,8 +477,8 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Why does quantization speed up memory-bound inference?",
       options: [
-        "Fewer bytes per parameter means fewer bytes streamed from memory per decode step — and time per token is proportional to bytes moved",
-        "Lower precision numbers are easier to sample from",
+        "Fewer bytes per parameter means fewer bytes streamed from memory per decode step",
+        "Lower-precision numbers are easier for the sampler to draw from quickly",
         "It reduces the number of layers in the model",
         "It shortens the KV cache sequence length"
       ],
@@ -501,10 +501,10 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What problem do OUTLIER features cause when naively quantizing large LLMs to int8, and how did LLM.int8() address it?",
       options: [
-        "A few activation dimensions have magnitudes far larger than the rest, wrecking the quantization scale; LLM.int8() computes those outlier dimensions in higher precision while quantizing the rest",
+        "A few outlier dimensions wreck the quantization scale; LLM.int8() computes those dimensions in higher precision",
         "Outliers make the model too small to store; the fix is padding",
         "Outliers occur only in the tokenizer and are removed",
-        "Outliers cause overflow in the KV cache index"
+        "Outlier values overflow the int8 range and wrap around, so LLM.int8() clamps them to ±127"
       ],
       correct: [0],
       explanation: "Beyond ~6B parameters, systematic large-magnitude outlier dimensions emerge in activations. A single per-tensor scale must stretch to cover them, crushing the resolution for normal values. LLM.int8() uses mixed-precision decomposition: outlier columns stay in fp16, everything else runs in int8 — recovering full quality."
@@ -513,8 +513,8 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What does 'activation-aware' mean in AWQ (Activation-aware Weight Quantization)?",
       options: [
-        "Weights that are multiplied by large activations matter most, so AWQ identifies these salient channels via activation statistics and protects them with per-channel scaling before quantizing",
-        "The activations themselves are quantized instead of the weights",
+        "Salient weight channels are identified via activation statistics and protected with per-channel scaling",
+        "The activations themselves are quantized to int4 instead of the weights, halving activation memory",
         "Quantization is only applied while the model is inactive",
         "Activation functions are replaced with linear ones"
       ],
@@ -525,7 +525,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Which statement about quantization is TRUE?",
       options: [
-        "It is a lossy technique: outputs can change, and aggressive low-bit quantization can measurably degrade quality, so the accuracy–efficiency trade-off must be evaluated",
+        "It is lossy: outputs can change, and aggressive low-bit quantization can measurably degrade quality",
         "It is exact, like PagedAttention, and never changes outputs",
         "It only reduces disk storage, not inference speed, because GPUs compute in fp32 internally",
         "It speeds up prefill more than decode, since prefill is the memory-bound phase"
@@ -539,7 +539,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "What is model pruning in the context of inference efficiency?",
       options: [
-        "Removing parts of a trained network — layers, attention heads, or hidden dimensions — to get a smaller, faster model",
+        "Removing parts of a trained network",
         "Deleting training data that the model memorized",
         "Truncating the input prompt to fit the context window",
         "Dynamically skipping some transformer layers at inference time depending on the input"
@@ -551,8 +551,8 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "In the prune-then-distill recipe (e.g., NVIDIA's Minitron), what role does knowledge distillation play?",
       options: [
-        "After pruning damages the model, the pruned student is retrained to match the original teacher's outputs, recovering most quality at a fraction of from-scratch training cost",
-        "Distillation selects which weights to prune",
+        "The pruned student is retrained to match the original teacher's outputs, recovering most of the lost quality",
+        "Distillation computes the layer-wise importance scores that decide which weights get pruned",
         "Distillation converts the model to int4",
         "Distillation increases the model's parameter count back to the original"
       ],
@@ -563,9 +563,9 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Compared to quantization, what is a distinctive ADVANTAGE of pruning+distillation?",
       options: [
-        "It reduces the actual FLOPs and parameter count, speeding up both memory- AND compute-bound regimes (quantization mainly cuts bytes moved)",
-        "It is exact and never changes model outputs",
-        "It requires no additional training",
+        "It reduces actual FLOPs and parameter count, speeding up both memory- and compute-bound regimes",
+        "It is exact and never changes model outputs, unlike quantization",
+        "It requires no additional training at all, unlike quantization-aware training methods",
         "It only works on vision models"
       ],
       correct: [0],
@@ -577,10 +577,10 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "Why are state-space models (e.g., Mamba) attractive for inference?",
       options: [
-        "They maintain a constant-size recurrent state instead of a KV cache that grows with sequence length, so per-token generation cost and memory stay O(1) in context length",
+        "They keep a constant-size recurrent state instead of a KV cache that grows with sequence length",
         "They eliminate matrix multiplications entirely",
         "They generate all tokens of the response simultaneously",
-        "They compress the KV cache into fewer heads, like an extreme form of GQA"
+        "They compress the KV cache into far fewer heads, acting like an extreme form of GQA"
       ],
       correct: [0],
       explanation: "Transformers pay O(t) memory and attention reads per token at step t (growing KV cache); SSMs compress history into a fixed-size state, making decode cost flat in sequence length. Trade-off: a fixed-size state can lose information full attention would keep (e.g., precise long-range recall), so quality on recall-heavy tasks can suffer."
@@ -589,7 +589,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "How does LINEAR attention achieve constant-memory generation?",
       options: [
-        "It replaces softmax with a kernel feature map, allowing the (key × value) statistics to be accumulated into a fixed-size running state so attention can be computed recurrently",
+        "It replaces softmax with a kernel feature map, so (key × value) statistics accumulate into a fixed-size recurrent state",
         "It keeps the softmax but sparsifies the attention matrix so only a constant number of entries are computed per step",
         "It stores the KV cache in a linked list to avoid fragmentation",
         "It quantizes the attention scores to 1 bit"
@@ -601,7 +601,7 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "single",
       question: "How do DIFFUSION language models differ from autoregressive generation at inference time?",
       options: [
-        "They generate/refine all token positions in parallel over a series of denoising steps, rather than producing tokens strictly left-to-right",
+        "They refine all token positions in parallel over a series of denoising steps, not strictly left-to-right",
         "They still generate left-to-right but use a small draft model to propose several tokens at once",
         "They generate one character at a time instead of one token",
         "They require a KV cache twice the normal size to store both noisy and clean tokens"
@@ -613,9 +613,9 @@ window.QUIZ_DATA["lecture10-basics"] = {
       type: "multi",
       question: "Final review — which statements correctly summarize the lecture's big picture? (Select all that apply)",
       options: [
-        "Generation is dominated by memory bandwidth, so most inference optimizations reduce bytes moved (weights and KV cache) per token",
-        "Systems-level techniques (continuous batching, PagedAttention, speculative decoding) speed things up without changing model outputs",
-        "Model-level techniques (quantization, GQA/MLA, pruning, alternative architectures) trade some fidelity or retraining effort for large efficiency gains",
+        "Generation is dominated by memory bandwidth, so most optimizations reduce bytes moved per token",
+        "Systems-level techniques (continuous batching, PagedAttention, speculative decoding) don't change model outputs",
+        "Model-level techniques (quantization, GQA/MLA, pruning, new architectures) trade some fidelity for efficiency",
         "Prefill and decode have identical performance characteristics, so no serving system treats them differently"
       ],
       correct: [0, 1, 2],

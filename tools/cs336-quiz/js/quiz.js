@@ -18,8 +18,14 @@
     return;
   }
 
+  if (manifest.comingSoon || !manifest.file) {
+    titleEl.textContent = manifest.title;
+    questionArea.innerHTML = '<p>This quiz is coming soon. <a href="index.html">Back to all lectures</a>.</p>';
+    return;
+  }
+
   // Dynamically load the lecture's data file, then start.
-  const DATA_VERSION = "study1"; // bump when question data changes
+  const DATA_VERSION = "study4"; // bump when question data changes
   const script = document.createElement("script");
   script.src = manifest.file + "?v=" + DATA_VERSION;
   script.onload = init;
@@ -113,8 +119,14 @@
     card.className = "question-card";
 
     const typeLabel = q.type === "multi" ? "Multiple answers — select all that apply" : "Single answer";
-    card.innerHTML = '<span class="question-type">' + typeLabel + "</span>" +
+    let head = '<span class="question-type">' + typeLabel + "</span>" +
       '<div class="question-text">' + escapeHtml(q.question) + "</div>";
+    if (q.image) {
+      head += '<figure class="question-figure"><img src="' + q.image + '" alt="Question figure">' +
+        (q.imageCredit ? "<figcaption>" + escapeHtml(q.imageCredit) + "</figcaption>" : "") +
+        "</figure>";
+    }
+    card.innerHTML = head;
 
     const optionsWrap = document.createElement("div");
     optionsWrap.className = "options";

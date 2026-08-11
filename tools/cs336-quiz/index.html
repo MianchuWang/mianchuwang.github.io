@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CS336 Learning Tools</title>
-  <link rel="stylesheet" href="css/style.css?v=study4">
+  <link rel="stylesheet" href="css/style.css?v=study6">
 </head>
 <body>
   <div class="container">
@@ -23,7 +23,7 @@
     </footer>
   </div>
 
-  <script src="data/lectures.js?v=study3"></script>
+  <script src="data/lectures.js?v=study6"></script>
   <script>
     // Compact view: one row per lecture, its quizzes as inline links.
     // Quiz titles follow "Topic — Variant"; key topics listed under the name.
@@ -40,6 +40,9 @@
       row.className = 'lecture-row';
       const links = quizzes.map(q => {
         const variant = (q.title.split('—')[1] || 'Quiz').trim();
+        if (q.comingSoon) {
+          return '<span class="quiz-link disabled" title="Coming soon">' + variant + '</span>';
+        }
         return '<a class="quiz-link" href="quiz.html?lecture=' + encodeURIComponent(q.id) + '">' + variant + '</a>';
       }).join('');
       const points = topics.length

@@ -107,6 +107,27 @@ a {
 
 .site-nav .nav-right a:hover { color: var(--fg); }
 
+/* small highlight badge anchored to a nav item's bottom-right */
+.site-nav .nav-badged {
+  position: relative;
+  padding-right: 2px;
+}
+
+.site-nav .nav-badge {
+  position: absolute;
+  right: -14px;
+  bottom: -7px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 6px;
+  padding: 2px 5px;
+  pointer-events: none;
+}
+
 .theme-toggle {
   background: none;
   border: none;
