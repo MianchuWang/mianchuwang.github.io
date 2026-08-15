@@ -1,0 +1,18 @@
+<p>Turn scores into a distribution along one axis. The naive version overflows the moment a
+logit reaches ~700, which is why every real implementation subtracts the max first —
+softmax is invariant to a constant shift, so this changes nothing but the arithmetic.</p>
+
+<p class="formula">$$\operatorname{softmax}(x)_i = \frac{e^{\,x_i - \max_j x_j}}{\sum_k e^{\,x_k - \max_j x_j}}$$</p>
+
+<ul>
+  <li><code>x</code> — any shape</li>
+  <li><code>axis</code> — the axis to normalise over, default <code>-1</code></li>
+</ul>
+
+<p>Return an array of the same shape whose slices along <code>axis</code> sum to 1.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p><code>keepdims=True</code> on both the max and the sum keeps the broadcast working for any
+  <code>axis</code>. Handle a negative <code>axis</code> for free by never converting it.</p>
+</details>

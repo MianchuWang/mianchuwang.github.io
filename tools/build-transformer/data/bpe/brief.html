@@ -1,0 +1,28 @@
+<p>The inner loop of BPE training — the part worth being able to write cold. The corpus is
+already pre-tokenized into words; each word is a tuple of symbols with a count:</p>
+
+<pre class="brief-code">{("l","o","w"): 5, ("l","o","w","e","r"): 2, ("n","e","w","e","s","t"): 6, ...}</pre>
+
+<p>One training step does three things:</p>
+
+<ul>
+  <li><strong>Count</strong> every adjacent symbol pair, weighted by the word's count — the pair
+      <code>("l","o")</code> in a word with count 5 contributes 5.</li>
+  <li><strong>Pick</strong> the most frequent pair; break ties by taking the lexicographically
+      <em>greater</em> pair.</li>
+  <li><strong>Merge</strong> it in every word: each adjacent occurrence, scanning left to right
+      without overlap, becomes one concatenated symbol —
+      <code>("s","t")</code> &rarr; <code>("st",)</code>.</li>
+</ul>
+
+<p>Return <code>(best_pair, merged_words)</code> as a new dict — do not mutate the input. If two
+words become identical after the merge, their counts add up.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p><code>max(counts, key=lambda p: (counts[p], p))</code> gets the count-then-lexicographic
+  ordering in one line. For the merge, a <code>while i &lt; len(word)</code> scan is cleaner than
+  fancy slicing: on a match append the concatenation and jump <code>i += 2</code>, otherwise copy
+  one symbol. That jump is what makes <code>("a","a","a")</code> merge into
+  <code>("aa","a")</code>, not <code>("aa","aa")</code>.</p>
+</details>

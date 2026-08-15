@@ -1,0 +1,18 @@
+<p>Every projection in a transformer is this one operation, so the shape reflex is worth
+drilling: the map applies to the <em>last</em> axis and leaves any leading batch axes alone.</p>
+
+<p class="formula">$$y = x W^\top + b$$</p>
+
+<ul>
+  <li><code>x</code> — <code>(..., d_in)</code>, any number of leading axes (or none at all)</li>
+  <li><code>W</code> — <code>(d_out, d_in)</code>, PyTorch's convention: one row per output unit</li>
+  <li><code>b</code> — <code>(d_out,)</code>, or <code>None</code> for a bias-free layer</li>
+</ul>
+
+<p>Return an array of shape <code>(..., d_out)</code>.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p><code>einsum(x, W, "... d_in, d_out d_in -> ... d_out")</code> handles the leading axes for
+  you. In plain numpy, <code>x @ W.T</code> broadcasts the same way.</p>
+</details>

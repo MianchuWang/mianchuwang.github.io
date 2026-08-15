@@ -1,0 +1,24 @@
+<p>At inference the KV cache, not the weights, is what fills memory. GQA shrinks it: keep all
+<code>num_heads</code> query heads, but project only <code>num_kv_heads</code> key/value heads
+and share each one across a group of queries. <code>num_kv_heads == num_heads</code> is plain
+MHA; <code>num_kv_heads == 1</code> is multi-query attention.</p>
+
+<ul>
+  <li><code>x</code> — <code>(b, n, d_model)</code>, and <code>d_head = d_model // num_heads</code></li>
+  <li><code>Wq</code> — <code>(num_heads * d_head, d_model)</code></li>
+  <li><code>Wk</code>, <code>Wv</code> — <code>(num_kv_heads * d_head, d_model)</code> &nbsp;← the narrow ones</li>
+  <li><code>Wo</code> — <code>(d_model, num_heads * d_head)</code></li>
+  <li><code>mask</code> — boolean <code>(n, n)</code> or <code>None</code></li>
+</ul>
+
+<p>Query head <code>i</code> uses KV head <code>i // (num_heads // num_kv_heads)</code>: the
+first group of queries shares KV head 0, the next shares KV head 1, and so on. Return
+<code>(b, n, d_model)</code>.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Rather than looping over groups, broadcast the KV heads back up:
+  <code>repeat(k, "b kh n d -> b (kh g) n d", g=num_heads // num_kv_heads)</code>.
+  Note that <code>(kh g)</code> — not <code>(g kh)</code> — is what puts query head <code>i</code>
+  with KV head <code>i // g</code>.</p>
+</details>

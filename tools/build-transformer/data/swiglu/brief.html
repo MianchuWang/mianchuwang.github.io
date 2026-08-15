@@ -1,0 +1,20 @@
+<p>The feed-forward half of a modern transformer block. Two projections go up, one gates the
+other elementwise, and a third comes back down. Naming follows Llama and CS336:
+<code>W1</code> is the gate, <code>W3</code> the up-projection, <code>W2</code> the down-projection.</p>
+
+<p class="formula">$$\operatorname{FFN}(x) = \bigl(\operatorname{SiLU}(x W_1^\top) \odot x W_3^\top\bigr)\, W_2^\top,
+\qquad \operatorname{SiLU}(z) = z\,\sigma(z)$$</p>
+
+<ul>
+  <li><code>x</code> — <code>(..., d_model)</code></li>
+  <li><code>W1</code>, <code>W3</code> — <code>(d_ff, d_model)</code></li>
+  <li><code>W2</code> — <code>(d_model, d_ff)</code></li>
+</ul>
+
+<p>Return <code>(..., d_model)</code>. There are no biases.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>$\sigma(z) = 1 / (1 + e^{-z})$. SiLU is <em>not</em> ReLU — it stays smooth and slightly
+  negative for small negative inputs. $\odot$ is a plain <code>*</code>.</p>
+</details>

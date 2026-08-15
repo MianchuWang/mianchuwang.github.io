@@ -1,0 +1,31 @@
+<p>Now assemble one decoder layer. Every piece is already written for you — the exercise is the
+wiring, which is where most from-scratch implementations actually go wrong: pre-norm vs
+post-norm, and what exactly the residual adds to.</p>
+
+<pre class="brief-code">h = x + MHA(RMSNorm(x, g1), Wq, Wk, Wv, Wo, num_heads, causal mask)
+y = h + SwiGLU(RMSNorm(h, g2), W1, W2, W3)</pre>
+
+<p>Note that the second residual branches from <code>h</code>, not from <code>x</code>, and that
+the norms sit <em>inside</em> the residual branches — the pre-norm arrangement that keeps deep
+stacks trainable.</p>
+
+<ul>
+  <li><code>x</code> — <code>(b, n, d_model)</code></li>
+  <li><code>p</code> — dict with <code>g1</code>, <code>Wq</code>, <code>Wk</code>, <code>Wv</code>,
+      <code>Wo</code>, <code>g2</code>, <code>W1</code>, <code>W2</code>, <code>W3</code></li>
+  <li><code>num_heads</code> — passed straight through to attention</li>
+</ul>
+
+<p>Attention must be causal: build the mask with <code>causal_mask(n, n)</code>.</p>
+
+<p class="brief-note">Available: <code>rms_norm(x, gamma, eps=1e-6)</code>,
+<code>softmax</code>, <code>attention</code>,
+<code>multihead_attention(x, Wq, Wk, Wv, Wo, num_heads, mask=None)</code>,
+<code>swiglu(x, W1, W2, W3)</code>, <code>causal_mask(n_q, n_k)</code>.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Four lines. If the test "all-zero weights leave x untouched" fails, a residual is missing;
+  if "matches the reference wiring" fails but the shapes are right, you likely normalised the
+  residual stream itself instead of only the branch.</p>
+</details>

@@ -1,0 +1,19 @@
+<p>Normalise each token vector on its own — across features, never across the batch — then
+give the network back a learnable scale and shift.</p>
+
+<p class="formula">$$y = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$$</p>
+
+<ul>
+  <li><code>x</code> — <code>(..., d)</code>; $\mu$ and $\sigma^2$ are taken over the last axis</li>
+  <li><code>gamma</code>, <code>beta</code> — <code>(d,)</code>, broadcast over the leading axes</li>
+  <li><code>eps</code> — added inside the square root, default <code>1e-5</code></li>
+</ul>
+
+<p>Use the biased variance (divide by $d$, not $d-1$) — that is what
+<code>np.var</code> does by default, and what every framework uses here.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p><code>keepdims=True</code> on the mean and variance keeps the broadcast aligned. A constant
+  input row must not produce NaN — that is what <code>eps</code> is for.</p>
+</details>

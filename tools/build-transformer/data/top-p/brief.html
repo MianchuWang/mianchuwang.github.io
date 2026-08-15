@@ -1,0 +1,21 @@
+<p>Sampling from the full distribution lets the long tail of near-zero tokens leak in. Top-p
+(nucleus) sampling keeps the <em>smallest</em> set of most-likely tokens whose probabilities
+already sum to at least <code>p</code>, throws away the rest, and renormalises.</p>
+
+<ul>
+  <li><code>probs</code> — <code>(..., vocab_size)</code>, each row a distribution summing to 1</li>
+  <li><code>p</code> — the nucleus threshold, e.g. <code>0.9</code></li>
+</ul>
+
+<p>Return an array of the same shape: kept tokens hold their renormalised probability, dropped
+tokens are exactly 0, and every row still sums to 1. The most likely token is always kept,
+even when its probability alone exceeds <code>p</code>. Positions must stay where they were —
+sort internally, but do not return a sorted row.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p><code>np.argsort</code> gives you the descending order (sort <code>-probs</code>), then
+  <code>np.take_along_axis</code> / <code>np.put_along_axis</code> move a mask between sorted and
+  original order. Keeping the token that <em>crosses</em> the threshold is the fiddly part:
+  <code>cumsum - sorted_probs &lt; p</code> does it, and keeps the top token for free.</p>
+</details>

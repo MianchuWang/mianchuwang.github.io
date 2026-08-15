@@ -1,0 +1,21 @@
+<p>A decoder may not look ahead. The square version is one <code>np.tril</code>, but the
+interesting case is decoding with a KV cache, where you feed <code>n_q</code> new queries
+against <code>n_k</code> cached keys — the diagonal is then offset.</p>
+
+<p>Treat query $i$ as the token at absolute position $n_k - n_q + i$,
+so it may attend to every key $j \le n_k - n_q + i$.</p>
+
+<ul>
+  <li><code>n_q</code>, <code>n_k</code> — number of queries and keys, with <code>n_q ≤ n_k</code></li>
+</ul>
+
+<p>Return a boolean array of shape <code>(n_q, n_k)</code>: <strong>True where attention is
+allowed</strong>. With <code>n_q == n_k</code> this is the familiar lower triangle; with
+<code>n_q == 1</code> (one new token against a full cache) every entry is True.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p><code>np.tril</code> takes a <code>k</code> offset, and it accepts non-square shapes.
+  Or build it from index arrays: <code>np.arange(n_k)[None, :] &lt;= (n_k - n_q + np.arange(n_q))[:, None]</code>.
+  Make sure the dtype is <code>bool</code>.</p>
+</details>

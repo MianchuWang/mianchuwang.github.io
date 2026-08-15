@@ -1,0 +1,24 @@
+<p>One AdamW update for one parameter tensor. Adam keeps two running averages; AdamW's
+contribution is to pull the weight decay <em>out</em> of the gradient and apply it directly to
+the parameter, so it does not get rescaled by the second moment.</p>
+
+<p class="formula">$$\begin{aligned}
+m &\leftarrow \beta_1 m + (1-\beta_1)\,g, &\quad \hat m &= m / (1-\beta_1^{\,t})\\
+v &\leftarrow \beta_2 v + (1-\beta_2)\,g^2, &\quad \hat v &= v / (1-\beta_2^{\,t})\\
+\theta &\leftarrow \theta \;-\; \mathrm{lr}\cdot\frac{\hat m}{\sqrt{\hat v} + \epsilon} \;-\; \mathrm{lr}\cdot\lambda\,\theta
+\end{aligned}$$</p>
+
+<ul>
+  <li><code>param</code>, <code>grad</code>, <code>m</code>, <code>v</code> — arrays of the same shape</li>
+  <li><code>t</code> — the step number, <strong>1-based</strong> (bias correction divides by zero at $t=0$)</li>
+  <li><code>weight_decay</code> — $\lambda$, applied to the parameter itself</li>
+</ul>
+
+<p>Return the tuple <code>(param, m, v)</code>, all updated. Do not modify the inputs in place.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Update the moments <em>before</em> the bias correction, and keep the corrected values out of
+  the stored state — the <code>m</code> and <code>v</code> you return are the uncorrected ones.
+  The decay term is $\mathrm{lr}\cdot\lambda\cdot\theta$, never $\lambda \cdot g$.</p>
+</details>

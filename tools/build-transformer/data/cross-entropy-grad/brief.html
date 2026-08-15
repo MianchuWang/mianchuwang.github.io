@@ -1,0 +1,24 @@
+<p>The gradient interviews love, because the algebra collapses so cleanly. For one token with
+logits $z$ and target $y$, the loss is $\operatorname{logsumexp}(z) - z_y$, and
+differentiating gives</p>
+
+<p class="formula">$$\frac{\partial \mathcal{L}}{\partial z_j} = \frac{1}{N}\Bigl(\operatorname{softmax}(z)_j - \mathbb{1}[j = y]\Bigr)$$</p>
+
+<p>— the predicted distribution minus the one-hot target, divided by $N$, the total number of
+tokens (all leading axes), because the forward loss is a <em>mean</em>.</p>
+
+<ul>
+  <li><code>logits</code> — <code>(..., vocab_size)</code></li>
+  <li><code>targets</code> — integer array of shape <code>(...)</code></li>
+</ul>
+
+<p>Return an array shaped like <code>logits</code>. The softmax inside must be the stable,
+shifted kind — the tests feed logits in the hundreds.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Build the one-hot by scattering into zeros:
+  <code>np.put_along_axis(onehot, targets[..., None], 1.0, axis=-1)</code>. $N$ is
+  <code>targets.size</code>. A sanity check the tests also run: every token's gradient row sums
+  to $0$, because softmax sums to 1 and the one-hot subtracts exactly 1.</p>
+</details>

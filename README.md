@@ -52,9 +52,14 @@ profile/           ← homepage content (JSON, no rebuild needed)
 writings/          ← posts (Markdown + frontmatter); manifest.json is generated
 tools/             ← self-contained web tools, one folder each
   cs336-quiz/          CS336 Learning Tools (quiz app, see its README)
+  build-transformer/   ML coding practice: implement transformer components in the
+                       browser with numpy + einops (see its README)
 index.html         ← home page (post list)
 post.html          ← article page (Markdown renderer, math, TOC)
 assets/            ← styles and JS
+  math.js              shared KaTeX loader: renderMathIn(el) renders $...$ and
+                       $$...$$ in dynamically injected HTML (used by the tools;
+                       posts render math in the markdown pipeline instead)
 scripts/           ← manifest generator
 .github/workflows/ ← auto-deploy on push
 ```
@@ -64,3 +69,12 @@ scripts/           ← manifest generator
 Drop a self-contained static app into `tools/<name>/` and add an entry to
 `profile/tools.json` (`title`, `description`, `url`). It appears in the
 home page's **Tool Set** section.
+
+For LaTeX math in a tool, import the shared renderer and call it on any
+element after injecting content:
+
+```js
+import { renderMathIn } from "../../../assets/math.js"; // from tools/<name>/js/
+el.innerHTML = html;   // may contain $x^2$ and $$\int f$$
+renderMathIn(el);      // async, fire-and-forget; <pre>/<code> are left alone
+```

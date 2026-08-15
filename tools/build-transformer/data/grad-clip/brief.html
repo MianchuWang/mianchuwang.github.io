@@ -1,0 +1,22 @@
+<p>A single bad batch can produce a gradient large enough to wreck a run. Clipping bounds the
+<em>global</em> norm — all parameter tensors treated as one long vector — so the update
+direction is preserved and only its length is capped.</p>
+
+<p class="formula">$$\lVert g\rVert = \sqrt{\sum_{\text{tensors}}\;\sum_{\text{elements}} g^2},\qquad
+\text{if } \lVert g\rVert > c:\;\; g \leftarrow g\cdot\frac{c}{\lVert g\rVert + \epsilon}$$</p>
+
+<ul>
+  <li><code>grads</code> — a list of arrays with different shapes</li>
+  <li><code>max_norm</code> — $c$, the cap on the global L2 norm</li>
+  <li><code>eps</code> — guards the division, default <code>1e-6</code></li>
+</ul>
+
+<p>Return a new list of arrays in the same order and shapes. If the norm is already within the
+cap, leave the gradients as they are.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>One norm for the whole list, not one per tensor — <code>sum((g**2).sum() for g in grads)</code>.
+  Every tensor is then scaled by the same factor, so the direction of the concatenated
+  gradient never changes.</p>
+</details>

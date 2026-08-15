@@ -1,0 +1,161 @@
+{
+  "components": [
+    {
+      "id": "bpe",
+      "group": "Tokenizer",
+      "title": "BPE merge step",
+      "tagline": "One training step: count pairs, pick the best, merge it everywhere.",
+      "difficulty": "medium",
+      "minutes": 15
+    },
+    {
+      "id": "linear",
+      "group": "Building blocks",
+      "title": "Linear layer",
+      "tagline": "Affine map over the last axis; batch dimensions come along for free.",
+      "difficulty": "easy",
+      "minutes": 3
+    },
+    {
+      "id": "softmax",
+      "group": "Building blocks",
+      "title": "Softmax",
+      "tagline": "Normalise to a distribution along one axis, without overflowing.",
+      "difficulty": "easy",
+      "minutes": 4
+    },
+    {
+      "id": "layer-norm",
+      "group": "Building blocks",
+      "title": "Layer norm",
+      "tagline": "Centre and rescale each token vector, then apply gain and bias.",
+      "difficulty": "easy",
+      "minutes": 4
+    },
+    {
+      "id": "rms-norm",
+      "group": "Building blocks",
+      "title": "RMSNorm",
+      "tagline": "Layer norm without the mean subtraction — what modern LMs use.",
+      "difficulty": "easy",
+      "minutes": 3
+    },
+    {
+      "id": "swiglu",
+      "group": "Building blocks",
+      "title": "SwiGLU feed-forward",
+      "tagline": "A gated MLP: SiLU on one branch, elementwise product, project back.",
+      "difficulty": "medium",
+      "minutes": 5
+    },
+    {
+      "id": "attention",
+      "group": "Attention",
+      "title": "Scaled dot-product attention",
+      "tagline": "The core operation: scores, scale, mask, softmax, combine.",
+      "difficulty": "medium",
+      "preamble": true,
+      "minutes": 8
+    },
+    {
+      "id": "causal-mask",
+      "group": "Attention",
+      "title": "Causal mask",
+      "tagline": "Boolean mask that also works when the keys carry a KV cache.",
+      "difficulty": "easy",
+      "minutes": 5
+    },
+    {
+      "id": "mha",
+      "group": "Attention",
+      "title": "Multi-head attention",
+      "tagline": "Project, split into heads with einops, attend, merge, project.",
+      "difficulty": "medium",
+      "preamble": true,
+      "minutes": 12
+    },
+    {
+      "id": "gqa",
+      "group": "Attention",
+      "title": "Grouped-query attention",
+      "tagline": "Fewer KV heads than query heads — the KV-cache saver.",
+      "difficulty": "hard",
+      "preamble": true,
+      "minutes": 12
+    },
+    {
+      "id": "rope",
+      "group": "Attention",
+      "title": "Rotary embeddings (RoPE)",
+      "tagline": "Rotate feature pairs by an angle proportional to position.",
+      "difficulty": "hard",
+      "minutes": 15
+    },
+    {
+      "id": "transformer-block",
+      "group": "Putting it together",
+      "title": "Pre-norm transformer block",
+      "tagline": "Wire norms, attention, MLP and residuals in the right order.",
+      "difficulty": "medium",
+      "preamble": true,
+      "minutes": 8
+    },
+    {
+      "id": "cross-entropy",
+      "group": "Training",
+      "title": "Cross-entropy loss",
+      "tagline": "Straight from logits, with the log-sum-exp trick.",
+      "difficulty": "medium",
+      "minutes": 8
+    },
+    {
+      "id": "cross-entropy-grad",
+      "group": "Training",
+      "title": "Cross-entropy backward",
+      "tagline": "The gradient every interview asks for: softmax minus one-hot.",
+      "difficulty": "medium",
+      "minutes": 8
+    },
+    {
+      "id": "adamw",
+      "group": "Training",
+      "title": "AdamW step",
+      "tagline": "Bias-corrected moments plus decoupled weight decay.",
+      "difficulty": "medium",
+      "minutes": 8
+    },
+    {
+      "id": "grad-clip",
+      "group": "Training",
+      "title": "Gradient clipping",
+      "tagline": "Rescale a whole parameter list by its global L2 norm.",
+      "difficulty": "easy",
+      "minutes": 4
+    },
+    {
+      "id": "lr-cosine",
+      "group": "Training",
+      "title": "Cosine LR schedule",
+      "tagline": "Linear warmup, cosine decay, then a constant floor.",
+      "difficulty": "easy",
+      "minutes": 5
+    },
+    {
+      "id": "kv-cache",
+      "group": "Inference",
+      "title": "KV-cache decode step",
+      "tagline": "Append one token to the cache and attend — no mask needed.",
+      "difficulty": "medium",
+      "preamble": true,
+      "minutes": 12
+    },
+    {
+      "id": "top-p",
+      "group": "Inference",
+      "title": "Top-p (nucleus) filtering",
+      "tagline": "Keep the smallest set of tokens covering probability p.",
+      "difficulty": "medium",
+      "minutes": 12
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+<p>The schedule almost every LM run uses: a short linear warmup so the early, badly-scaled
+updates stay small, a cosine decay through the bulk of training, then a constant floor.</p>
+
+<p class="formula">$$\mathrm{lr}(t) = \begin{cases}
+\mathrm{lr}_{\max}\cdot t / T_w & t < T_w\\[2pt]
+\mathrm{lr}_{\min} + \tfrac{1}{2}\!\left(1 + \cos\!\left(\pi\,\tfrac{t - T_w}{T_c - T_w}\right)\right)\!\left(\mathrm{lr}_{\max} - \mathrm{lr}_{\min}\right) & T_w \le t \le T_c\\[2pt]
+\mathrm{lr}_{\min} & t > T_c
+\end{cases}$$</p>
+
+<ul>
+  <li><code>t</code> — the current iteration</li>
+  <li><code>warmup_iters</code> — $T_w$, where the peak <code>lr_max</code> is reached</li>
+  <li><code>cosine_iters</code> — $T_c$, where the decay ends at <code>lr_min</code></li>
+</ul>
+
+<p>Return a plain float.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Three branches, no numpy needed beyond <code>np.cos</code> and <code>np.pi</code>.
+  Check the endpoints: $t = 0$ gives $0$, $t = T_w$ gives exactly
+  <code>lr_max</code>, and $t = T_c$ gives exactly <code>lr_min</code>.</p>
+</details>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build a Transformer in 150 Minutes</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧩</text></svg>">
+  <link rel="stylesheet" href="css/style.css?v=bt6">
+</head>
+<body>
+  <div class="container">
+    <header class="site-header">
+      <a href="../../" class="back-link">Mianchu Wang</a>
+      <h1>Build a Transformer in 150 Minutes</h1>
+      <p class="subtitle">Implement a transformer one component at a time, in numpy and einops,
+        and run the tests in the browser. Shapes are part of the contract: every signature is
+        annotated with <a href="https://docs.kidger.site/jaxtyping/" target="_blank"
+        rel="noopener">jaxtyping</a> and checked at runtime. The 150 minutes is a fluent pass
+        — per-component budgets are on the right; a first time through takes longer.</p>
+      <p class="env-note">Python runs locally in your browser through Pyodide —
+        <code>numpy</code>, <code>einops</code>, <code>jaxtyping</code> and
+        <code>beartype</code> are preloaded, nothing is uploaded anywhere, and your code is
+        kept in this browser's local storage.</p>
+    </header>
+
+    <div class="progress-line">
+      <span class="progress-text" id="progress-text">0 / 0 solved</span>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <button class="reset-progress" id="reset-progress" title="Clear saved code and progress">reset</button>
+    </div>
+
+    <main id="component-groups"></main>
+
+    <footer class="site-footer">
+      <p>Built for personal study &middot; Conventions follow
+        <a href="https://cs336.stanford.edu/" target="_blank" rel="noopener">Stanford CS336</a> and PyTorch</p>
+    </footer>
+  </div>
+
+  <script type="module" src="js/index.js?v=bt6"></script>
+</body>
+</html>

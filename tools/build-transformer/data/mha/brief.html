@@ -1,0 +1,27 @@
+<p>One attention op is not enough — a transformer runs <code>h</code> of them in parallel on
+slices of the feature axis, then concatenates and projects. The whole exercise is the
+bookkeeping: <em>split</em> the model dimension into heads, attend, <em>merge</em> back.</p>
+
+<pre class="brief-code">q = x Wq&#8868;                                (b, n, d_model)
+q = rearrange(q, "b n (h d) -> b h n d")   split into heads
+o = Attn(q, k, v, mask)                    (b, h, n, d_head)
+o = rearrange(o, "b h n d -> b n (h d)")   merge heads
+y = o Wo&#8868;</pre>
+
+<ul>
+  <li><code>x</code> — <code>(b, n, d_model)</code></li>
+  <li><code>Wq</code>, <code>Wk</code>, <code>Wv</code>, <code>Wo</code> — <code>(d_model, d_model)</code></li>
+  <li><code>num_heads</code> — divides <code>d_model</code>; <code>d_head = d_model // num_heads</code></li>
+  <li><code>mask</code> — boolean <code>(n, n)</code> or <code>None</code>, shared by all heads</li>
+</ul>
+
+<p>Return <code>(b, n, d_model)</code>. <code>softmax</code> and <code>attention(Q, K, V, mask)</code>
+are already defined for you.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Head <code>i</code> owns the <em>contiguous</em> slice <code>[i*d_head : (i+1)*d_head]</code>
+  of the projected features — that is exactly what <code>(h d)</code> means in the pattern above,
+  and it is why the merge must be the exact inverse. The mask needs a broadcastable head axis:
+  <code>mask[None, None]</code> or <code>rearrange(mask, "q k -> 1 1 q k")</code>.</p>
+</details>

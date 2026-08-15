@@ -1,0 +1,22 @@
+<p>The operation the whole architecture is named after. Everything else in the block is
+plumbing around this.</p>
+
+<p class="formula">$$\operatorname{Attn}(Q, K, V) = \operatorname{softmax}\!\left(\frac{Q K^\top}{\sqrt{d_k}} + M\right) V$$</p>
+
+<ul>
+  <li><code>Q</code> — <code>(..., n_q, d_k)</code>, any leading axes (batch, heads, …)</li>
+  <li><code>K</code> — <code>(..., n_k, d_k)</code></li>
+  <li><code>V</code> — <code>(..., n_k, d_v)</code></li>
+  <li><code>mask</code> — boolean, broadcastable to <code>(..., n_q, n_k)</code>, or <code>None</code>.
+      <strong>True means "may attend"</strong>: $M$ is $0$ where the mask is True and $-\infty$
+      where it is False, so blocked positions get exactly zero weight.</li>
+</ul>
+
+<p>Return <code>(..., n_q, d_v)</code>. A stable <code>softmax</code> is already defined for you.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Divide by $\sqrt{d_k}$, not $d_k$. Apply the mask by setting the blocked
+  scores to <code>-np.inf</code> <em>before</em> the softmax — <code>np.where(mask, scores, -np.inf)</code>.
+  With einops: <code>einsum(Q, K, "... q d, ... k d -> ... q k")</code>.</p>
+</details>

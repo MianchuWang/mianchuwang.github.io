@@ -20,6 +20,9 @@ Then open <http://localhost:8642/tools/cs336-quiz/>.
 - Progress bar, final score, and a review list of missed questions with explanations
 - Retry without reloading
 
+Question, option, and explanation text may contain LaTeX math — `$...$` inline,
+`$$...$$` display — rendered by the site-wide KaTeX helper (`assets/math.js`).
+
 ## Adding a new lecture
 
 1. Create `data/<id>.js` (copy `data/lecture10-basics.js` as a template):

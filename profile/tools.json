@@ -4,6 +4,11 @@
       "title": "CS336 Learning Tools",
       "description": "Interactive quizzes for Stanford CS336.",
       "url": "tools/cs336-quiz/"
+    },
+    {
+      "title": "Build a Transformer in 150 Minutes",
+      "description": "Implement every core transformer component in numpy and einops — typed, tested, and timed — in the browser.",
+      "url": "tools/build-transformer/"
     }
   ]
 }

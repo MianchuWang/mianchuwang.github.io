@@ -1,0 +1,19 @@
+<p>The loss every language model is trained on. Going through <code>softmax</code> and then
+<code>log</code> is the classic beginner bug: it overflows for large logits and loses precision
+for small probabilities. Fold the two together instead.</p>
+
+<p class="formula">$$\mathcal{L} = \operatorname*{mean}_{\text{tokens}}\;\Bigl[\operatorname{logsumexp}(z) - z_{\text{target}}\Bigr]$$</p>
+
+<ul>
+  <li><code>logits</code> — <code>(..., vocab_size)</code>, unnormalised scores</li>
+  <li><code>targets</code> — integer array of shape <code>(...)</code>, the correct index per token</li>
+</ul>
+
+<p>Return a single float: the mean over all leading axes (batch, sequence, …).</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Subtract the row max first — it cancels out of the difference above.
+  <code>np.take_along_axis(z, targets[..., None], axis=-1)</code> picks the target logits without
+  a loop, and works for any number of batch axes.</p>
+</details>

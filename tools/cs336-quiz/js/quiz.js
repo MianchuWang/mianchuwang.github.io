@@ -1,6 +1,9 @@
 // Generic quiz engine. Loads a lecture's question file based on ?lecture=<id>,
 // renders one question at a time, and always shows the explanation after checking.
 // Answered questions can be revisited: navigation restores the locked state.
+// Question, option, and explanation text may contain $...$ / $$...$$ math.
+import { renderMathIn } from "../../../assets/math.js";
+
 (function () {
   const params = new URLSearchParams(window.location.search);
   const lectureId = params.get("lecture");
@@ -206,6 +209,7 @@
 
       checkBtn.classList.add("hidden");
       nextBtn.classList.remove("hidden");
+      renderMathIn(explanationEl);
       if (scroll) explanationEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
@@ -234,6 +238,7 @@
     questionArea.appendChild(card);
 
     if (isAnswered) reveal(false);
+    renderMathIn(card);
   }
 
   function renderResults() {
@@ -281,6 +286,7 @@
     }
 
     resultArea.innerHTML = html;
+    renderMathIn(resultArea);
     document.getElementById("retry-btn").addEventListener("click", () => {
       current = 0;
       results.length = 0;

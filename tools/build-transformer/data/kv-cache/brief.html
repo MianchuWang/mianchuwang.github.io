@@ -1,0 +1,29 @@
+<p>Why decoding one token costs $O(n)$ instead of $O(n^2)$: keys and values for the past are
+computed once and cached; each new token projects only itself, appends, and attends over the
+whole cache. This is the loop every inference server runs.</p>
+
+<p>One decode step, single head, no output projection:</p>
+
+<ul>
+  <li>Project the new token: $q = x W_q^\top$, $k = x W_k^\top$, $v = x W_v^\top$
+      (one position per batch element).</li>
+  <li>Append $k$ and $v$ to their caches along the time axis.</li>
+  <li>Attend $q$ over the <em>full</em> updated cache. No mask needed — the single query is the
+      newest position, so it may see everything, itself included.</li>
+</ul>
+
+<p>Return <code>(out, k_cache_new, v_cache_new)</code>. The signature enforces the cache growth:
+in comes <code>"b t d_k"</code>, out goes <code>"b t+1 d_k"</code>. The caches must not be
+mutated in place. The empty-cache case (<code>t = 0</code>, the first token) must work.</p>
+
+<p class="brief-note">Available: <code>softmax</code> and <code>attention(Q, K, V, mask=None)</code>.
+The defining property, which the tests check: decoding a sequence one token at a time must
+reproduce full causal attention over that sequence exactly.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p><code>np.concatenate([k_cache, k[:, None, :]], axis=1)</code> grows the cache;
+  <code>attention(q[:, None, :], K, V)[:, 0]</code> treats the single query as a length-1
+  sequence. If the one-by-one-equals-causal test fails but shapes pass, you probably attended
+  over the <em>old</em> cache, excluding the new token itself.</p>
+</details>

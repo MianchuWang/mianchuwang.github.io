@@ -1,0 +1,30 @@
+<p>RoPE injects position by <em>rotating</em> pairs of features instead of adding a vector. The
+payoff falls out of the algebra: after rotating queries and keys, their dot product depends
+only on the distance between the two positions.</p>
+
+<p>Take the features two at a time — the pair
+(<code>x[2i]</code>, <code>x[2i+1]</code>) — and rotate it by
+$\theta_i = \mathrm{pos}\cdot\mathrm{base}^{-2i/d}$:</p>
+
+<p class="formula">$$\begin{aligned}
+\mathrm{out}_{2i}\phantom{{}+1} &= x_{2i}\cos\theta_i - x_{2i+1}\sin\theta_i\\
+\mathrm{out}_{2i+1} &= x_{2i}\sin\theta_i + x_{2i+1}\cos\theta_i
+\end{aligned}$$</p>
+
+<ul>
+  <li><code>x</code> — <code>(..., n, d_head)</code> with <code>d_head</code> even</li>
+  <li><code>positions</code> — integer array <code>(n,)</code>; usually <code>arange(n)</code>, but
+      with a KV cache it starts at the cache length</li>
+  <li><code>theta</code> — the base, default <code>10000.0</code></li>
+</ul>
+
+<p>Return the same shape as <code>x</code>. Note the pairing is <em>interleaved</em>
+(neighbouring features), not split-half — both conventions exist in the wild.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Build the angles once as <code>(n, d_head/2)</code> via an outer product of positions and
+  frequencies, then reshape <code>x</code> to <code>(..., n, d_head/2, 2)</code> —
+  <code>rearrange(x, "... n (p two) -> ... n p two", two=2)</code> — rotate, and flatten back.
+  Position 0 must leave the vector unchanged.</p>
+</details>

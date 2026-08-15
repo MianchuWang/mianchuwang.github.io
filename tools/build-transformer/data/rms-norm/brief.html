@@ -1,0 +1,18 @@
+<p>Llama, Qwen, DeepSeek and most recent models drop the mean subtraction and the bias from
+layer norm. What is left is a pure rescaling by the root-mean-square of the vector — cheaper,
+one fewer reduction, and empirically just as stable.</p>
+
+<p class="formula">$$y_i = \gamma_i\,\frac{x_i}{\operatorname{RMS}(x)},\qquad
+\operatorname{RMS}(x) = \sqrt{\frac{1}{d}\sum_j x_j^2 + \epsilon}$$</p>
+
+<ul>
+  <li><code>x</code> — <code>(..., d)</code>; the RMS is taken over the last axis</li>
+  <li><code>gamma</code> — <code>(d,)</code> learnable gain, no bias term</li>
+  <li><code>eps</code> — inside the square root, default <code>1e-6</code></li>
+</ul>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Do <em>not</em> centre the input: a row of all-ones must come back as all-ones, not zeros.
+  <code>reduce(x**2, "... d -> ... 1", "mean")</code> is the einops way to keep the axis.</p>
+</details>
