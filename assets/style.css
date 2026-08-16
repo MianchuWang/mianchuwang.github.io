@@ -267,6 +267,16 @@ a {
   color: var(--fg-soft);
 }
 
+/* Tool Set entries carry a short id (T<yymmdd>, creation date) for reference. */
+.tool-id {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: var(--fg-faint);
+  border: 1px solid var(--divider);
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
 /* ---------------------------------------------- experience / education -- */
 
 .hero-cv {

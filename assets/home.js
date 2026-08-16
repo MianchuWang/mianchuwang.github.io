@@ -24,9 +24,10 @@ function renderTools(tools) {
   ul.className = "pub-list";
   for (const tool of tools) {
     const li = document.createElement("li");
+    const id = tool.id ? `<span class="tool-id">${tool.id}</span> ` : "";
     li.innerHTML = `
       <div class="pub-title"><a href="${tool.url}">${tool.title}</a></div>
-      <div class="pub-meta">${tool.description || ""}</div>`;
+      <div class="pub-meta">${id}${tool.description || ""}</div>`;
     ul.appendChild(li);
   }
   return ul;

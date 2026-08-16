@@ -39,6 +39,7 @@ function makeEditor(initial) {
       tabSize: 4,
       indentWithTabs: false,
       lineWrapping: false,
+      viewportMargin: Infinity, // render everything: the editor grows with the code
       extraKeys: {
         Tab: (editor) => editor.execCommand("indentMore"),
         "Shift-Tab": (editor) => editor.execCommand("indentLess"),

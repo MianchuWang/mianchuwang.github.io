@@ -67,8 +67,10 @@ scripts/           ← manifest generator
 ## Adding a tool
 
 Drop a self-contained static app into `tools/<name>/` and add an entry to
-`profile/tools.json` (`title`, `description`, `url`). It appears in the
-home page's **Tool Set** section.
+`profile/tools.json` (`id`, `title`, `description`, `url`). It appears in the
+home page's **Tool Set** section. The `id` is `T<yymmdd>` from the tool's
+creation date (its first commit) — e.g. `T260816` — shown on the home page and
+in the tool's own header, so tools can be referred to by number.
 
 For LaTeX math in a tool, import the shared renderer and call it on any
 element after injecting content:

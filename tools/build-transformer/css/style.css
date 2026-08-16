@@ -60,6 +60,17 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
 .site-header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; margin-top: 14px; }
 .subtitle { color: var(--muted); font-size: 1rem; margin-top: 8px; }
 
+.tool-id {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  vertical-align: middle;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+
 .env-note {
   margin-top: 16px;
   font-size: 0.875rem;
@@ -318,13 +329,17 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
 
 .editor-wrap { border-bottom: 1px solid var(--line); }
 
-.CodeMirror {
-  height: 460px;
+/* Auto-grow: the editor expands to fit the code (viewportMargin: Infinity),
+   with a floor so short files don't collapse the pane. Scoped under
+   .editor-wrap to outrank CodeMirror's own `height: 300px` default. */
+.editor-wrap .CodeMirror {
+  height: auto;
   font-family: var(--mono);
   font-size: 0.8125rem;
   line-height: 1.6;
   background: var(--surface);
 }
+.editor-wrap .CodeMirror-scroll { min-height: 460px; }
 .CodeMirror-gutters { background: var(--surface); border-right: 1px solid var(--line); }
 .CodeMirror-linenumber { color: #b9b2a6; }
 
@@ -442,7 +457,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
 @media (max-width: 900px) {
   .lab-cols { grid-template-columns: minmax(0, 1fr); }
   .container { padding: 24px 16px 60px; }
-  .CodeMirror, .editor-fallback { height: 380px; }
+  .editor-wrap .CodeMirror-scroll { min-height: 320px; }
+  .editor-fallback { height: 380px; }
   .kbd-hint { display: none; }
 }
 
