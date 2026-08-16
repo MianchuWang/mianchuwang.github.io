@@ -40,7 +40,7 @@ def _():
     logits = r.normal(size=(3, 6)) + 5000.0
     targets = r.integers(0, 6, size=3)
     loss = cross_entropy(logits, targets)
-    assert_finite(loss, label="loss")
+    assert_finite(loss, label="loss", hint="use the log-sum-exp trick instead of log(softmax(...))")
     assert_close(loss, _ref(logits, targets))
 
 
@@ -48,7 +48,7 @@ def _():
 def _():
     logits = np.array([[0.0, 800.0]])
     loss = as_array(cross_entropy(logits, np.array([0])))
-    assert_finite(loss, label="loss")
+    assert_finite(loss, label="loss", hint="use the log-sum-exp trick instead of log(softmax(...))")
     assert_close(loss, 800.0, tol=1e-6)
 
 

@@ -23,7 +23,7 @@ def _():
 def _():
     x = np.array([1000.0, 1000.0, 1001.0])
     out = softmax(x)
-    assert_finite(out)
+    assert_finite(out, hint="subtract the per-slice max before exponentiating")
     e = np.exp(x - 1001.0)
     assert_close(out, e / e.sum())
 
@@ -33,7 +33,7 @@ def _():
     # A global max-subtraction (instead of per-row) sends the small row to 0/0.
     x = np.array([[1000.0, 1001.0], [-1000.0, -999.0]])
     out = as_array(softmax(x))
-    assert_finite(out)
+    assert_finite(out, hint="subtract the per-slice max before exponentiating")
     row = np.array([1.0, np.e]) / (1.0 + np.e)
     assert_close(out[0], row, label="row 0")
     assert_close(out[1], row, label="row 1")
@@ -42,7 +42,7 @@ def _():
 @case("stable for very negative logits")
 def _():
     out = softmax(np.array([-1200.0, -1200.0]))
-    assert_finite(out)
+    assert_finite(out, hint="subtract the per-slice max before exponentiating")
     assert_close(out, np.array([0.5, 0.5]))
 
 

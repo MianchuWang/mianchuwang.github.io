@@ -16,7 +16,7 @@ export class PythonRunner {
   boot() {
     if (this.ready) return this.ready;
 
-    this.worker = new Worker("js/py-worker.js?v=bt7");
+    this.worker = new Worker("js/py-worker.js?v=bt11");
     this.worker.onmessage = (event) => this._onMessage(event.data);
     this.worker.onerror = (event) => {
       const message = event.message || "the Python worker failed to start";

@@ -55,11 +55,7 @@ function render(components) {
   groupsEl.replaceChildren(frag);
 
   const solved = components.filter((c) => isSolved(c.id)).length;
-  const minutesLeft = components
-    .filter((c) => !isSolved(c.id))
-    .reduce((sum, c) => sum + (c.minutes || 0), 0);
-  const leftNote = solved === components.length ? "done" : `~${minutesLeft} min left`;
-  textEl.textContent = `${solved} / ${components.length} solved · ${leftNote}`;
+  textEl.textContent = `${solved} / ${components.length} solved`;
   fillEl.style.width = `${(100 * solved) / components.length}%`;
 }
 

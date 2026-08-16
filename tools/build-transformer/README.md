@@ -1,10 +1,13 @@
-# Build a Transformer in 150 Minutes
+# Build a Transformer in 150 Minutes (T260816)
 
 An ML-coding practice tool: pick a transformer component, implement it in numpy and
 einops in the browser, and run its test suite. The 150 minutes in the name is the sum
-of the per-component `minutes` budgets in `data/components.json` — when adding or
-removing components, keep the title (here, `index.html`, `lab.html`, `js/lab.js`,
-and `profile/tools.json`) in sync with the new total. Python runs client-side through
+of the per-component `minutes` in `data/components.json` — a timeboxed full pass for
+building muscle memory. Each component's share is shown on the landing-page rows and
+as a quiet countdown in the lab header: it starts when the page opens, goes negative
+without any alert, and freezes when the tests pass. Informational, never enforced.
+When adding or removing components, keep the name (here, `index.html`, `lab.html`,
+`js/lab.js`, `profile/tools.json`) roughly in sync with the new total. Python runs client-side through
 [Pyodide](https://pyodide.org/) — no server, no accounts, no uploads. Code and progress
 are kept in `localStorage`.
 

@@ -7,6 +7,10 @@ with a real filename so tracebacks stay readable).
 
 import numpy as np
 
+# The run's shared namespace acts as the user's module: name it so runtime
+# type errors read "your_code.linear", not "None.linear".
+__name__ = "your_code"
+
 CASES = []
 
 
@@ -47,12 +51,10 @@ def assert_shape(got, want, label="output"):
         raise AssertionError(f"{label} has shape {a.shape}, expected {want}.")
 
 
-def assert_finite(got, label="output"):
+def assert_finite(got, label="output", hint=""):
     a = as_array(got, label)
     if not np.all(np.isfinite(a)):
-        raise AssertionError(
-            f"{label} contains NaN or inf — subtract the max before exponentiating."
-        )
+        raise AssertionError(f"{label} contains NaN or inf{' — ' + hint if hint else ''}.")
 
 
 def assert_close(got, want, tol=1e-6, label="output"):

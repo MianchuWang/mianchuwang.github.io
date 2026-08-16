@@ -5,6 +5,7 @@ import { loadCode, saveCode, clearCode, isSolved, markSolved } from "./store.js"
 const els = {
   title: document.getElementById("title"),
   difficulty: document.getElementById("difficulty"),
+  timer: document.getElementById("timer"),
   brief: document.getElementById("brief"),
   status: document.getElementById("status"),
   output: document.getElementById("output"),
@@ -28,6 +29,36 @@ function setStatus(label, kind = "") {
   els.status.className = "status" + (kind ? ` status-${kind}` : "");
 }
 
+/* ---------- suggested-time countdown ----------
+   Starts when the component opens. Purely informational: it goes quietly
+   negative when the suggested time is up — no alerts — and freezes once
+   the tests all pass. */
+
+const timer = { deadline: 0, interval: null };
+
+function renderTimer() {
+  const left = Math.round((timer.deadline - Date.now()) / 1000);
+  const abs = Math.abs(left);
+  const mm = Math.floor(abs / 60);
+  const ss = String(abs % 60).padStart(2, "0");
+  els.timer.textContent = `${left < 0 ? "−" : ""}${mm}:${ss}`;
+}
+
+function startTimer(minutes) {
+  if (!minutes) return;
+  timer.deadline = Date.now() + minutes * 60000;
+  els.timer.classList.remove("hidden");
+  renderTimer();
+  timer.interval = setInterval(renderTimer, 1000);
+}
+
+function freezeTimer() {
+  if (timer.interval) {
+    clearInterval(timer.interval);
+    timer.interval = null;
+  }
+}
+
 /* ---------- editor ---------- */
 
 function makeEditor(initial) {
@@ -43,6 +74,21 @@ function makeEditor(initial) {
       extraKeys: {
         Tab: (editor) => editor.execCommand("indentMore"),
         "Shift-Tab": (editor) => editor.execCommand("indentLess"),
+        // In leading whitespace, Backspace deletes back to the previous tab
+        // stop (a whole soft tab), mirroring what Tab inserts.
+        Backspace: (editor) => {
+          const sels = editor.listSelections();
+          const cur = sels[0].head;
+          const anchor = sels[0].anchor;
+          if (sels.length !== 1 || cur.line !== anchor.line || cur.ch !== anchor.ch) {
+            return window.CodeMirror.Pass;
+          }
+          const before = editor.getLine(cur.line).slice(0, cur.ch);
+          if (cur.ch === 0 || /[^ ]/.test(before)) return window.CodeMirror.Pass;
+          const unit = editor.getOption("indentUnit") || 4;
+          const remove = ((cur.ch - 1) % unit) + 1;
+          editor.replaceRange("", { line: cur.line, ch: cur.ch - remove }, cur);
+        },
       },
     });
     cm.setValue(initial);
@@ -116,6 +162,7 @@ function renderResults(results) {
 
   if (allPassed) {
     markSolved(state.comp.id);
+    freezeTimer();
     const note = document.createElement("div");
     note.className = "solved-note";
     const next = state.comp.next;
@@ -153,7 +200,9 @@ const runner = new PythonRunner({
 });
 
 async function run() {
-  if (runner.isBusy()) return;
+  // The disabled check also guards the keyboard shortcut: during the Pyodide
+  // boot the button is disabled, and a second queued run would error out.
+  if (runner.isBusy() || els.runBtn.disabled) return;
   els.runBtn.disabled = true;
   setStatus("Running…", "busy");
   state.stdout = "";
@@ -247,6 +296,8 @@ async function main() {
     els.difficulty.className = `badge badge-${comp.difficulty}`;
   }
   wireNav(comp);
+  // No countdown when revisiting a solved component — that is reference mode.
+  if (!isSolved(comp.id)) startTimer(comp.minutes);
 
   const [brief, starter, tests, harness, runnerSrc, preamble] = await Promise.all([
     text(`data/${comp.id}/brief.html`),
