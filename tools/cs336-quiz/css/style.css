@@ -62,6 +62,60 @@ button:focus-visible, a:focus-visible {
 
 .subtitle { color: var(--muted); font-size: 1rem; margin-top: 6px; }
 
+.tool-id {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 400;
+  vertical-align: middle;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+
+.index-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.index-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+#quiz-progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--good);
+  border-radius: 999px;
+}
+
+.reset-results {
+  font-family: inherit;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.reset-results:hover { color: var(--bad); text-decoration: underline; }
+
+.row-result {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--good);
+  white-space: nowrap;
+}
+
 .lecture-list {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -363,6 +417,13 @@ button:focus-visible, a:focus-visible {
 }
 
 .result-message { margin-top: 8px; font-size: 1rem; color: var(--muted); }
+
+.result-best {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--good);
+}
 
 .review-section { margin-top: 36px; text-align: left; }
 

@@ -28,7 +28,7 @@ import { renderMathIn } from "../../../assets/math.js";
   }
 
   // Dynamically load the lecture's data file, then start.
-  const DATA_VERSION = "study4"; // bump when question data changes
+  const DATA_VERSION = "study8"; // bump when question data changes
   const script = document.createElement("script");
   script.src = manifest.file + "?v=" + DATA_VERSION;
   script.onload = init;
@@ -241,10 +241,25 @@ import { renderMathIn } from "../../../assets/math.js";
     renderMathIn(card);
   }
 
+  // Results live in localStorage so the landing page can show best/last per lecture.
+  function saveResult(score, total) {
+    try {
+      const key = "cq:result:" + lectureId;
+      const prev = JSON.parse(localStorage.getItem(key) || "null");
+      const entry = { score: score, total: total, date: new Date().toISOString() };
+      const best = prev && prev.best && prev.best.score >= score ? prev.best : entry;
+      localStorage.setItem(key, JSON.stringify({ last: entry, best: best }));
+      return prev ? prev.best : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function renderResults() {
     const total = questions.length;
     const score = results.filter(Boolean).length;
     const pct = Math.round(100 * score / total);
+    const prevBest = saveResult(score, total);
 
     let message;
     if (pct >= 90) message = "Excellent — you have a strong grasp of this lecture.";
@@ -257,11 +272,17 @@ import { renderMathIn } from "../../../assets/math.js";
     progressFill.style.width = "100%";
     progressText.textContent = "Complete";
 
+    const bestNote = prevBest
+      ? '<div class="result-best">Previous best: ' + prevBest.score + " / " + prevBest.total +
+        (score > prevBest.score ? " — new best!" : "") + "</div>"
+      : "";
+
     let html =
       '<div class="result-card">' +
       '<div class="result-label">Your score</div>' +
       '<div class="result-score">' + score + " / " + total + "</div>" +
       '<div class="result-message">' + message + "</div>" +
+      bestNote +
       '<div class="quiz-actions" style="justify-content:center; margin-top:24px;">' +
       '<a class="btn btn-secondary" href="index.html" style="text-decoration:none;">All lectures</a>' +
       '<button class="btn btn-primary" id="retry-btn">Retry quiz</button>' +

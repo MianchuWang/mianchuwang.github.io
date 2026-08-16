@@ -5,15 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CS336 Learning Tools</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=study6">
+  <link rel="stylesheet" href="css/style.css?v=study8">
 </head>
 <body>
   <div class="container">
     <header class="site-header">
       <a href="../../" class="back-link">Mianchu Wang</a>
-      <h1>CS336 Learning Tools</h1>
-      <p class="subtitle">Self-test quizzes for <a href="https://cs336.stanford.edu/" target="_blank" rel="noopener">Stanford CS336: Language Modeling from Scratch</a>. <strong>Basics</strong> covers each lecture's core knowledge points, for review; <strong>Advances</strong> targets leading-lab interview difficulty, with extra material to test how deep your understanding goes.</p>
+      <h1>CS336 Learning Tools <span class="tool-id">T260810</span></h1>
+      <p class="subtitle">Twenty key self-test questions for every lecture of
+        <a href="https://cs336.stanford.edu/" target="_blank" rel="noopener">Stanford CS336:
+        Language Modeling from Scratch</a> (guest lectures excluded). Results are saved in
+        this browser.</p>
     </header>
+
+    <div class="index-progress">
+      <span id="quiz-progress">0 / 0 lectures completed</span>
+      <div class="index-progress-bar"><div id="quiz-progress-fill"></div></div>
+      <button class="reset-results" id="reset-results" title="Clear saved results">reset</button>
+    </div>
 
     <main>
       <div id="lecture-list" class="lecture-list"></div>
@@ -24,38 +33,55 @@
     </footer>
   </div>
 
-  <script src="data/lectures.js?v=study6"></script>
+  <script src="data/lectures.js?v=study8"></script>
   <script>
-    // Compact view: one row per lecture, its quizzes as inline links.
-    // Quiz titles follow "Topic — Variant"; key topics listed under the name.
+    // One quiz per lecture; best/last results come from localStorage (cq:result:<id>).
     const list = document.getElementById('lecture-list');
-    const groups = new Map();
+
+    function readResult(id) {
+      try { return JSON.parse(localStorage.getItem('cq:result:' + id) || 'null'); }
+      catch { return null; }
+    }
+    function since(iso) {
+      const days = Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
+      if (!Number.isFinite(days) || days < 0) return '';
+      if (days === 0) return 'today';
+      if (days === 1) return 'yesterday';
+      if (days < 30) return days + 'd ago';
+      return new Date(iso).toLocaleDateString();
+    }
+
+    let completed = 0;
     window.LECTURES.forEach(lec => {
-      if (!groups.has(lec.tag)) groups.set(lec.tag, []);
-      groups.get(lec.tag).push(lec);
-    });
-    groups.forEach((quizzes, tag) => {
-      const topic = quizzes[0].title.split('—')[0].trim();
-      const topics = quizzes.find(q => q.topics)?.topics || [];
+      const res = readResult(lec.id);
+      if (res) completed++;
       const row = document.createElement('div');
       row.className = 'lecture-row';
-      const links = quizzes.map(q => {
-        const variant = (q.title.split('—')[1] || 'Quiz').trim();
-        if (q.comingSoon) {
-          return '<span class="quiz-link disabled" title="Coming soon">' + variant + '</span>';
-        }
-        return '<a class="quiz-link" href="quiz.html?lecture=' + encodeURIComponent(q.id) + '">' + variant + '</a>';
-      }).join('');
-      const points = topics.length
-        ? '<div class="lecture-row-points">' + topics.join(' &middot; ') + '</div>'
+      const result = res
+        ? '<span class="row-result">' + res.best.score + '/' + res.best.total +
+          ' &middot; ' + since(res.last.date) + '</span>'
         : '';
       row.innerHTML =
-        '<span class="lecture-row-tag">' + tag + '</span>' +
+        '<span class="lecture-row-tag">' + lec.tag + '</span>' +
         '<div class="lecture-row-main">' +
-          '<div class="lecture-row-topic">' + topic + '</div>' + points +
+          '<div class="lecture-row-topic">' + lec.title + '</div>' +
+          '<div class="lecture-row-points">' + (lec.topics || []).join(' &middot; ') + '</div>' +
         '</div>' +
-        '<span class="quiz-links">' + links + '</span>';
+        result +
+        '<span class="quiz-links"><a class="quiz-link" href="quiz.html?lecture=' +
+          encodeURIComponent(lec.id) + '">' + (res ? 'Retake' : 'Start') + '</a></span>';
       list.appendChild(row);
+    });
+
+    document.getElementById('quiz-progress').textContent =
+      completed + ' / ' + window.LECTURES.length + ' lectures completed';
+    document.getElementById('quiz-progress-fill').style.width =
+      (100 * completed / window.LECTURES.length) + '%';
+
+    document.getElementById('reset-results').addEventListener('click', () => {
+      if (!confirm('Clear all saved quiz results?')) return;
+      Object.keys(localStorage).filter(k => k.startsWith('cq:')).forEach(k => localStorage.removeItem(k));
+      location.reload();
     });
   </script>
 </body>
