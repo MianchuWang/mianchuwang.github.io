@@ -1,3 +1,15 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "slug": "2026-08-runpod-setup",
+      "title": "Setting Up RunPod: A Memo",
+      "date": "2026-08-28",
+      "lang": "en",
+      "tags": [
+        "Infrastructure",
+        "RunPod"
+      ],
+      "summary": "A practical guide to configuring RunPod GPU pods for research workflows."
+    }
+  ]
 }
