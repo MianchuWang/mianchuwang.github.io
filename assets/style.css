@@ -213,6 +213,18 @@ a {
 
 .post-list a:hover .post-title { color: var(--accent); }
 
+.post-list .post-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.post-list .post-summary {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--fg-faint);
+}
+
 .post-list .post-date {
   flex: none;
   font-size: 13px;

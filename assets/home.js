@@ -11,7 +11,10 @@ function renderList(posts) {
     const li = document.createElement("li");
     li.innerHTML = `
       <a href="post.html?p=${encodeURIComponent(p.slug)}"${p.lang && p.lang !== "en" ? ` lang="${p.lang}"` : ""}>
-        <span class="post-title">${p.title}</span>
+        <span class="post-main">
+          <span class="post-title">${p.title}</span>
+          ${p.summary ? `<span class="post-summary">${p.summary}</span>` : ""}
+        </span>
         <span class="post-date">${formatDate(p.date)}</span>
       </a>`;
     ul.appendChild(li);
@@ -134,14 +137,6 @@ async function main() {
   }
 
   const frag = document.createDocumentFragment();
-  if (posts.length > 0) {
-    const h2 = document.createElement("h2");
-    h2.className = "section-title";
-    h2.textContent = "Technical Writing";
-    frag.appendChild(h2);
-    frag.appendChild(renderList(posts));
-  }
-
   if (pubs.length > 0) {
     const h2 = document.createElement("h2");
     h2.className = "section-title";
@@ -158,6 +153,15 @@ async function main() {
     h2.textContent = "Tool Set";
     frag.appendChild(h2);
     frag.appendChild(renderTools(tools));
+  }
+
+  if (posts.length > 0) {
+    const h2 = document.createElement("h2");
+    h2.className = "section-title";
+    h2.id = "writing";
+    h2.textContent = "Writing";
+    frag.appendChild(h2);
+    frag.appendChild(renderList(posts));
   }
 
   listEl.replaceChildren(frag);

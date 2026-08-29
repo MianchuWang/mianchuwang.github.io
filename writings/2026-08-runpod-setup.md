@@ -1,49 +1,40 @@
 ---
-title: "Setting Up RunPod: A Memo"
+title: "Setting Up RunPod for verl"
 date: 2026-08-28
-tags: [Infrastructure, RunPod]
-summary: A practical guide to configuring RunPod GPU pods for research workflows.
+tags: [Infrastructure, RunPod, verl, Runbook]
+summary: An agent-executable runbook for setting up verl on a fresh RunPod pod.
 ---
 
-This memo records my RunPod setup, kept short for future reference: deploy a pod with a persistent network volume, connect VS Code and Claude Code over SSH, and keep the whole uv-based Python environment on the volume — so a brand-new pod is ready to work in about a minute, with nothing to reinstall.
+This is a runbook for an **AI agent with SSH access to the pod** (`Host runpod` in the user's `~/.ssh/config`). Sections 1–3 are console/human steps; sections 4–5 are shell steps the agent executes over SSH, all idempotent. The contract: **the Docker image owns the heavy stack** (torch, vLLM, flash-attn — version-matched, precompiled); **`/workspace` owns everything personal**. This page builds the verl *environment* only — project code, data pipelines, and training configs belong to each project's own repo.
 
-本备忘录记录了我的 RunPod 配置流程：部署挂载持久化 network volume 的 pod，通过 SSH 连接 VS Code 与 Claude Code，并把基于 uv 的 Python 环境完整放在 volume 上——新开 pod 约一分钟即可恢复工作，无需重新安装任何东西。
+> [!warning] **Agent scope**: set up and verify the environment (through §4), then stop and report back. Do **not** launch training or any long-running job on the user's behalf — §5 documents the launch pattern for the user to invoke, or for the agent only when the user explicitly asks.
 
-## Storage
+## 1. Template (console, once)
 
-RunPod offers three storage options when deploying a pod:
+- **Container image**: `verlai/verl:vllm011.latest`
+- **Container start command** — must override *both* entrypoint and cmd (the image inherits vLLM's ENTRYPOINT; a plain `bash -c` start command becomes arguments to the vLLM server and sshd never starts):
 
-- **Network volume** — persistent storage independent of any pod. Survives pod termination and can be attached to a new pod in the same datacenter. Mounted at `/workspace`. Billed per GB per month even when no pod is running.
-- **Volume disk** — persistent storage tied to one pod. Survives stops and restarts, but is deleted when the pod is terminated. Also mounted at `/workspace`.
-- **None (container disk only)** — everything lives on the container disk and is wiped on every stop or restart. Cheapest; fine for throwaway experiments.
-
-Rule of thumb: use a network volume for anything you want to keep (code, datasets, checkpoints); the container disk is scratch space.
-
-When deploying later pods, pick the **existing** volume in the storage dropdown instead of "Automatically create" — a fresh volume means an empty `/workspace`. A volume is pinned to its datacenter, so later pods must be deployed there too.
-
-> [!info] An example deployment, for reference:
->
-> - **Template**: RunPod PyTorch 2.8.0 (CUDA 13.0)
-> - **GPU**: 1× RTX PRO 4500 — 32 GB VRAM, 62 GB RAM, 12 vCPU
-> - **Disk**: 30 GB container disk + 90 GB network volume
-> - **Cost**: `$0.73/hour` (almost all GPU; storage is about a cent per hour), billed per millisecond. The network volume alone bills `~$6/month` while no pod is running
-
-## Connection
-
-Add your SSH public key once, under RunPod → Settings → SSH Public Keys; every pod deployed afterwards accepts it.
-
-The pod's Connect panel shows two SSH options — use **SSH over exposed TCP** (the proxy one doesn't support VS Code). It gives a command like:
-
-```
-ssh root@194.26.196.6 -p 22117 -i ~/.ssh/id_ed25519
+```json
+{"entrypoint": ["bash", "-c"], "cmd": ["apt-get update && apt-get install -y openssh-server && mkdir -p ~/.ssh && echo \"$PUBLIC_KEY\" >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && service ssh start && sleep infinity"]}
 ```
 
-Map it into `~/.ssh/config`: the user is the part before `@` (always `root`), the hostname is the IP after `@`, and the port is the number after `-p`. Both change with every pod:
+- Container disk 50 GB; persistent storage mounted at `/workspace`; **expose TCP port 22** (no port 22 → no "SSH over exposed TCP" → no remote dev).
+
+## 2. Pod (console, per deployment)
+
+1. Attach persistent storage first if a network volume exists (EU-SE-1 no longer offers new network volumes; the template's 100 GB volume disk is the fallback — it **dies with the pod**, so git/wandb are the real persistence).
+2. Filter for **Public IP**; proxy-only machines cannot carry VS Code / direct SSH.
+3. GPU: A40 (~$0.44/h/GPU, Ampere — bf16 yes, FP8 no). GPU count is fixed at deploy; scale by redeploying.
+4. After boot, trust env vars over the pod card: `RUNPOD_MEM_GB` is the real CPU RAM cap (**50 GB per GPU**; the card's larger number is the host's).
+
+## 3. SSH access
+
+`~/.ssh/config` on the user's machine (IP/port change per pod — read them from the pod's Connect panel, or `RUNPOD_PUBLIC_IP` / `RUNPOD_TCP_PORT_22` in `/proc/1/environ`):
 
 ```
 Host runpod
-    HostName 194.26.196.6
-    Port 22117
+    HostName <RUNPOD_PUBLIC_IP>
+    Port <RUNPOD_TCP_PORT_22>
     User root
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
@@ -53,66 +44,83 @@ Host runpod
     ServerAliveCountMax 6
 ```
 
-The extra lines are quality-of-life: `accept-new` auto-accepts the host key of a brand-new pod (otherwise VS Code stalls on a confirmation prompt every time), the keep-alives stop idle sessions from dropping, and `ForwardAgent` lets git on the pod authenticate with the local SSH key — private repos clone without storing any credentials on the pod.
-
-Then in VS Code: **Remote-SSH: Connect to Host** → `runpod`, and open `/workspace`.
-
-VS Code installs its server component into `~/.vscode-server`, which is erased with the container disk — it re-downloads on every fresh pod. To keep it (and its extensions) on the volume instead, add to the local `settings.json`, keyed by the `Host` name:
-
-```json
-"remote.SSH.serverInstallPath": {
-    "runpod": "/workspace/.vscode-server"
-}
-```
-
-## Environment
-
-Anything installed outside `/workspace` (system packages, the default conda, `~/.bashrc`) lives on the container disk and disappears with the pod. The trick is to install the whole environment onto the network volume once, then reattach it to every new pod.
-
-The RunPod PyTorch template already ships uv, and the image restores it on every pod — no install needed. What must persist are its download dirs, so write a small script pointing them (and Claude Code, below) at the volume:
+Verify: `ssh -o BatchMode=yes runpod 'echo ok'`. If **Permission denied**: the pod is missing the public key — the user opens the RunPod **Web Terminal** and appends it:
 
 ```bash
-cat > /workspace/setup.sh << 'EOF'
+mkdir -p ~/.ssh && echo '<PUBKEY_LINE>' >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
+```
+
+## 4. Environment (agent, over SSH, idempotent)
+
+**Secrets**: `/workspace/setup.sh` needs `WANDB_API_KEY` and an account-level `RUNPOD_API_KEY` (the auto-injected pod-scoped key can `stop pod` but fails read queries). Ask the user for both if no existing `setup.sh` has them. Never commit them to git.
+
+**4.1 — `/workspace/setup.sh`** (single entrypoint for every shell; `~/.bashrc` dies with the container):
+
+```bash
 export PATH=/workspace/bin:$PATH
-export UV_PYTHON_INSTALL_DIR=/workspace/.uv/python
 export UV_CACHE_DIR=/workspace/.cache/uv
 export HF_HOME=/workspace/.cache/huggingface
-export CLAUDE_CONFIG_DIR=/workspace/.claude
-EOF
+export XDG_CACHE_HOME=/workspace/.cache          # vLLM, torch.compile, flashinfer
+export TRITON_CACHE_DIR=/workspace/.cache/triton # triton ignores XDG
+export WANDB_API_KEY=<ASK_USER>
+export RUNPOD_API_KEY=<ASK_USER>                 # account-level; must come AFTER any line exporting the injected key
+export $(cat /proc/1/environ | tr "\0" "\n" | grep -E "^RUNPOD_POD_ID=" | xargs)
+[ -f /workspace/.venv/bin/activate ] && source /workspace/.venv/bin/activate  # venv arrives in §4.3
 ```
 
-(If a template ever lacks uv: `curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/workspace/bin sh` puts it on the volume.)
+The `/proc/1/environ` extraction exists because SSH sessions do not inherit container env vars. Before appending anything to `setup.sh`, `grep` for an existing export of the same name — a later duplicate silently wins.
 
-With `setup.sh` in place, install Claude Code — also once. Copy the binary to `/workspace/bin` (already on the `PATH`), and sign in; `CLAUDE_CONFIG_DIR` keeps the credentials on the volume:
+**4.2 — per-pod bootstrap** (container disk, redo after every pod recreation):
+
+```bash
+echo 'source /workspace/setup.sh' >> ~/.bashrc
+apt-get update && apt-get install -y tmux
+mkdir -p /workspace/bin && wget -qO /workspace/bin/runpodctl https://github.com/runpod/runpodctl/releases/latest/download/runpodctl-linux-amd64 && chmod +x /workspace/bin/runpodctl
+```
+
+**4.3 — thin venv** at `/workspace/.venv` (sees the image's stack via `--system-site-packages`; holds only additions; independent of any project checkout):
+
+```bash
+python3 -m venv --system-site-packages /workspace/.venv
+source /workspace/setup.sh
+uv pip install --no-deps "verl==0.8.0"
+```
+
+Two hard rules: **never let torch / vllm / flash-attn (or `nvidia-*`) into the venv** — install torch-adjacent packages with `--no-deps` and watch the resolver output (recovery: `uv pip uninstall torch`); **verl's version must match the image's vLLM** — PyPI `verl==0.9.0` fails to import against this image's vLLM 0.11, `0.8.0` works.
+
+**4.4 — verification** (all must pass):
 
 ```bash
 source /workspace/setup.sh
-curl -fsSL https://claude.ai/install.sh | bash
-mkdir -p /workspace/bin && cp ~/.local/bin/claude /workspace/bin/
-claude   # sign in once
+python -c "import verl, torch, vllm; print(verl.__version__, torch.__version__, vllm.__version__)"
+python -c "import torch; print(torch.__file__)"   # must be /usr/local/..., NOT /workspace/.venv/...
+echo $RUNPOD_POD_ID && runpodctl get pod $RUNPOD_POD_ID
+nvidia-smi --query-gpu=index,memory.used --format=csv,noheader
 ```
 
-Running on the pod, it edits files and launches jobs directly there. On later pods `claude` is already installed and signed in. (The copied binary can't auto-update itself — re-run the installer occasionally.)
-
-The project itself declares its dependencies (`pyproject.toml` + `uv.lock`), so there is no environment to hand-build — clone and sync. Use the SSH URL (`git@github.com:...`) for private repos; agent forwarding from the Connection section handles the authentication:
+**4.5 — smoke test** (proves verl actually *runs*, using its official GSM8K quickstart data):
 
 ```bash
-source /workspace/setup.sh
-cd /workspace
-git clone ...
-cd myproject
-uv sync
-source .venv/bin/activate
+curl -fsSL https://raw.githubusercontent.com/volcengine/verl/v0.8.0/examples/data_preprocess/gsm8k.py -o /tmp/gsm8k.py
+python /tmp/gsm8k.py --local_dir /workspace/data/gsm8k
+python -m verl.trainer.main_ppo --cfg job > /dev/null && echo VERL_CONFIG_OK
 ```
 
-`uv sync` creates `.venv` inside the project from the lockfile. Because the cache lives on the volume, the heavy wheels (CUDA, torch) download only the first time — **on later pods `uv sync` just re-links them**:
+Environment is done. Clone the project repo (check **all branches** — work may live on a feature branch; cloning uses the user's forwarded agent, so run it from an SSH session, not the Web Terminal) and follow its README from here.
+
+## 5. Running
+
+Long runs live in tmux, never a bare SSH terminal:
 
 ```bash
-# Only on a new/restarted pod — if you just ran the block above, you're done
-source /workspace/setup.sh
-cd /workspace/myproject && uv sync
-source .venv/bin/activate
+tmux new -s train      # or: tmux new-session -d -s train "<command>"
+tmux attach -t train   # reconnect after any disconnect
 ```
 
-(`~/.bashrc` is wiped with the pod, which is why the activation lives in `/workspace/setup.sh` instead.)
+Launch pattern — log to the volume, auto-stop the pod when the run ends *whether it succeeds or crashes* (`;`, not `&&`):
 
+```bash
+<run-command> 2>&1 | tee /workspace/train.log; runpodctl stop pod $RUNPOD_POD_ID
+```
+
+`runpodctl get pod $RUNPOD_POD_ID` is the harmless auth probe; `runpodctl stop pod` takes effect immediately with no confirmation. Verify launch health within the first minutes: every GPU shows load in `nvidia-smi`, and step timing appears on wandb.

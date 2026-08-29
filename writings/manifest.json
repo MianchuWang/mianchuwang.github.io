@@ -2,14 +2,16 @@
   "posts": [
     {
       "slug": "2026-08-runpod-setup",
-      "title": "Setting Up RunPod: A Memo",
+      "title": "Setting Up RunPod for verl",
       "date": "2026-08-28",
       "lang": "en",
       "tags": [
         "Infrastructure",
-        "RunPod"
+        "RunPod",
+        "verl",
+        "Runbook"
       ],
-      "summary": "A practical guide to configuring RunPod GPU pods for research workflows."
+      "summary": "An agent-executable runbook for setting up verl on a fresh RunPod pod."
     }
   ]
 }
