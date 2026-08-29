@@ -1,0 +1,28 @@
+<p>Training learned an ordered list of merges; encoding replays them. Given one pre-split
+word and the merge list, tokenize the word the way GPT-2's encoder does:</p>
+
+<pre class="brief-code">word   = ("l","o","w","e","s","t")
+merges = [("s","t"), ("e","st"), ("o","w")]   # earlier = higher priority
+&rarr; ("l", "ow", "est")</pre>
+
+<ul>
+  <li><strong>Rank</strong> each pair by its position in <code>merges</code> — index 0 is the
+      strongest merge.</li>
+  <li><strong>Loop</strong>: among the adjacent pairs currently in the word, find the one with
+      the <em>lowest</em> rank. No pair has a rank &rarr; done.</li>
+  <li><strong>Merge</strong> every non-overlapping occurrence of that pair, scanning left to
+      right — same scan as the training step — then repeat.</li>
+</ul>
+
+<p>The loop matters: applying a merge can create a pair with an even <em>earlier</em> rank, so
+one pass over <code>merges</code> is not enough. Symbols never seen in training simply stay
+as they are.</p>
+
+<details class="hint">
+  <summary>Hint</summary>
+  <p>Build <code>rank = {pair: i for i, pair in enumerate(merges)}</code> once, then each round
+  take <code>min(pairs, key=lambda p: rank.get(p, float("inf")))</code> over the pairs present in
+  the word; stop when the winner is not in <code>rank</code> at all. The merge itself is the
+  <code>while i &lt; len(symbols)</code> scan you already wrote for the training step — append the
+  concatenation and jump <code>i += 2</code> on a match.</p>
+</details>

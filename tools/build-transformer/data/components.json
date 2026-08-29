@@ -6,7 +6,15 @@
       "title": "BPE merge step",
       "tagline": "One training step: count pairs, pick the best, merge it everywhere.",
       "difficulty": "medium",
-      "minutes": 15
+      "minutes": 12
+    },
+    {
+      "id": "bpe-encode",
+      "group": "Tokenizer",
+      "title": "BPE encode",
+      "tagline": "Replay the learned merges by priority to tokenize a word.",
+      "difficulty": "medium",
+      "minutes": 10
     },
     {
       "id": "linear",
@@ -72,7 +80,7 @@
       "tagline": "Project, split into heads with einops, attend, merge, project.",
       "difficulty": "medium",
       "preamble": true,
-      "minutes": 12
+      "minutes": 11
     },
     {
       "id": "gqa",
@@ -81,7 +89,7 @@
       "tagline": "Fewer KV heads than query heads — the KV-cache saver.",
       "difficulty": "hard",
       "preamble": true,
-      "minutes": 12
+      "minutes": 10
     },
     {
       "id": "rope",
@@ -89,7 +97,7 @@
       "title": "Rotary embeddings (RoPE)",
       "tagline": "Rotate feature pairs by an angle proportional to position.",
       "difficulty": "hard",
-      "minutes": 15
+      "minutes": 13
     },
     {
       "id": "transformer-block",
@@ -147,7 +155,7 @@
       "tagline": "Append one token to the cache and attend — no mask needed.",
       "difficulty": "medium",
       "preamble": true,
-      "minutes": 12
+      "minutes": 11
     },
     {
       "id": "top-p",
@@ -155,7 +163,7 @@
       "title": "Top-p (nucleus) filtering",
       "tagline": "Keep the smallest set of tokens covering probability p.",
       "difficulty": "medium",
-      "minutes": 12
+      "minutes": 10
     }
   ]
 }

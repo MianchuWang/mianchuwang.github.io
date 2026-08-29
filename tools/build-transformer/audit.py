@@ -168,6 +168,52 @@ def cross_entropy_grad(logits, targets):
     return (p - onehot) / logits.shape[0]
 """),
     ],
+    "bpe-encode": [
+        ("one pass over the merge list misses re-enabled merges", """
+def bpe_encode(word, merges):
+    symbols = list(word)
+    for pair in merges:
+        out, i = [], 0
+        while i < len(symbols):
+            if i + 1 < len(symbols) and (symbols[i], symbols[i + 1]) == pair:
+                out.append(symbols[i] + symbols[i + 1]); i += 2
+            else:
+                out.append(symbols[i]); i += 1
+        symbols = out
+    return tuple(symbols)
+"""),
+        ("merges the leftmost rankable pair instead of the best-ranked", """
+def bpe_encode(word, merges):
+    rank = {p: i for i, p in enumerate(merges)}
+    symbols = list(word)
+    while True:
+        for i in range(len(symbols) - 1):
+            if (symbols[i], symbols[i + 1]) in rank:
+                symbols[i:i + 2] = [symbols[i] + symbols[i + 1]]
+                break
+        else:
+            break
+    return tuple(symbols)
+"""),
+        ("missing infinity default lets unknown pairs win the min", """
+def bpe_encode(word, merges):
+    rank = {p: i for i, p in enumerate(merges)}
+    symbols = list(word)
+    while len(symbols) > 1:
+        pairs = set(zip(symbols, symbols[1:]))
+        best = min(pairs, key=lambda p: rank.get(p, 0))
+        if best not in rank:
+            break
+        out, i = [], 0
+        while i < len(symbols):
+            if i + 1 < len(symbols) and (symbols[i], symbols[i + 1]) == best:
+                out.append(symbols[i] + symbols[i + 1]); i += 2
+            else:
+                out.append(symbols[i]); i += 1
+        symbols = out
+    return tuple(symbols)
+"""),
+    ],
     "linear": [
         ("W treated as (d_in, d_out)", """
 import numpy as np
