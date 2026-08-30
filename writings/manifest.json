@@ -1,6 +1,19 @@
 {
   "posts": [
     {
+      "slug": "2026-08-grpo-variants",
+      "title": "GRPO, Dr. GRPO, DAPO Comparisons",
+      "date": "2026-08-30",
+      "lang": "en",
+      "tags": [
+        "DAPO",
+        "GRPO",
+        "RL",
+        "verl"
+      ],
+      "summary": "Three critic-free RL objectives, one pipeline — what each changes in the token-weighting math, and what actually differs in training."
+    },
+    {
       "slug": "2026-08-grpo-a40-scaling",
       "title": "Fine-tuning Qwen2.5-1.5B-Instruct on GSM8K with Single/Double A40 GPUs",
       "date": "2026-08-28",
