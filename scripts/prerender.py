@@ -111,7 +111,10 @@ def posts_html(posts):
     for p in posts:
         lang = f' lang="{p["lang"]}"' if p.get("lang") and p["lang"] != "en" else ""
         wid = f'<span class="tool-id">W{p["date"].replace("-", "")[2:]}</span>' if p.get("date") else ""
-        tags = "".join(f'<span class="tag">{t}</span>' for t in p.get("tags", []))
+        tags = "".join(
+            f'<span class="tag{" tag-wandb" if t.lower() == "wandb" else ""}">{t}</span>'
+            for t in p.get("tags", [])
+        )
         tags = f'<span class="post-tags">{wid}{tags}</span>'
         href = p.get("url") or f'post.html?p={p["slug"]}'
         external = ' target="_blank" rel="noopener"' if p.get("url") else ""

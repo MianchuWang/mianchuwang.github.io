@@ -243,6 +243,12 @@ a {
   white-space: nowrap;
 }
 
+.tag-wandb {
+  background: #ffbe00; /* W&B brand yellow — same in both themes */
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
 .empty-note {
   color: var(--fg-faint);
   font-size: 14px;

@@ -4,7 +4,12 @@
       "title": "Fine-tuning Qwen2.5-1.5B-Instruct on GSM8K with Single/Double A40 GPUs",
       "date": "2026-08-30",
       "lang": "en",
-      "tags": ["GPU", "GRPO", "verl"],
+      "tags": [
+        "GPU",
+        "GRPO",
+        "verl",
+        "wandb"
+      ],
       "summary": "A 1-vs-2 GPU GRPO comparison: where the speedup went, phase by phase (wandb report).",
       "url": "https://wandb.ai/mianchu/vp1_grpo_gsm8k/reports/Fine-tuning-Qwen2-5-1-5B-Instruct-on-GSM8K-with-Single-Double-A40-GPUs--VmlldzoxNzgyNzczNQ"
     }
