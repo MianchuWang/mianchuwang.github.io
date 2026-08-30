@@ -50,7 +50,7 @@ $$
 
 ## Ablations
 
-**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need. All three runs share identical config and seed; only the listed switches differ.
+**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), 64 prompts × $G = 12$ rollouts per step, max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need. A large $G$ sharpens everything at once: fewer all-wrong zero-gradient groups, more lone-success events, finer $k$ resolution. All three runs share identical config and seed; only the listed switches differ.
 
 **Variants.** Three training runs (R = run), each one switch apart:
 
