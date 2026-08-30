@@ -77,7 +77,7 @@ Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long fai
 
 ### E2 — what does removing the std division buy?
 
-Claim: dividing by group std amplifies near-unanimous groups — by $G/\sqrt{k(G-k)}$, ≈2.5× at $k=1$ vs ≈2.0 balanced at $G=5$ — which are precisely the least learnable prompts, and it turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Evidence to collect:
+Claim: dividing by group std amplifies near-unanimous groups — precisely the least learnable prompts — and turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Evidence to collect:
 
 1. **Gradient stability** — grad-norm variance and spike rate, R2 vs R3; R2's spikes should coincide with batches containing $k = 1$ or $G-1$ groups.
 2. **Where the learning goes** — bucket prompts by early solve rate and track per-bucket accuracy: R3 should gain fastest on mid-difficulty prompts, while R2 diverts advantage mass to the extremes (measurable as the share of total $|\hat{A}|$ coming from near-unanimous groups).
