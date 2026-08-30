@@ -33,6 +33,8 @@ $$
 - **$1/|o_i|$ gone** — GRPO's normalizer means well: give every rollout equal total weight regardless of length. But per *token* that suppresses a long failure more weakly (and reinforces a long success more weakly) than a short one — so it effectively encourages long wrong rollouts and short correct ones (prediction: wrong-answer length grows under GRPO, not here).
 - **$/\,\mathrm{std}$ gone** — near-solved / near-impossible questions have tiny std and got outsized advantages.
 
+> [!info] **This is objective hacking.** The reward itself is never gamed — no rollout earns more by being long. The gap sits between the *intended* objective (reward) and the *implemented* surrogate: under $1/|o_i|$, the optimizer can lower the surrogate by parking failure probability mass in its least-punished variants — the long ones — without improving correctness at all. Same species as reward hacking, one level down.
+
 ### DAPO — four changes, no KL
 
 $$
