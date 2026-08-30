@@ -68,7 +68,7 @@ Full-shard FSDP costs three collectives per micro-batch: all-gather params for t
 
 ## Economics & takeaways
 
-The run cost **$1.66 on 1×A40** (3h 46m × $0.44) vs **$2.52 on 2×A40** (2h 52m × $0.88): the second GPU delivered 1.30× the speed for 1.52× the money. On this interconnect, doubling GPUs is a way to buy time, not efficiency — worth it only when wall clock matters more than budget.
+The run cost **\$1.66 on 1×A40** (3h 46m × \$0.44) vs **\$2.52 on 2×A40** (2h 52m × \$0.88): the second GPU delivered 1.30× the speed for 1.52× the money. On this interconnect, doubling GPUs is a way to buy time, not efficiency — worth it only when wall clock matters more than budget.
 
 1. **Buy interconnect, not GPU count.** `nvidia-smi topo -m` is the first command on any multi-GPU pod; on `SYS`, redeploy and draw a different host.
 2. **Read utilization, power, and MFU together.** NCCL busy-waits at 100% utilization; only MFU says whether the math is useful.
