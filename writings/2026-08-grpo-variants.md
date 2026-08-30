@@ -79,7 +79,7 @@ Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long fai
 
 Claim: near-unanimous groups have tiny std, so the lone deviant's advantage is inflated — 1 correct out of 5 gives that rollout $\hat{A} = 2.0$, vs $1.0$ in a balanced group. Evidence to collect:
 
-1. **$|\hat{A}|$ vs group outcome** — mean $|\hat{A}|$ binned by correct-count in the group (0…G): with std the extremes dominate (U-shape); without, balanced groups do (∩-shape).
+1. **Amplification by group outcome** — for each group, let $k$ = number of correct rollouts. Averaging $|\hat{A}|$ over all groups with the same $k$, the with-std / without-std ratio should trace $G/\sqrt{k(G-k)}$: ≈2.5 at $k = 1$ or $G-1$ vs ≈2.0 for balanced groups ($G=5$) — the std division amplifies near-unanimous groups the most. (The spread is modest at $G=5$; raising rollout $n$ sharpens it.)
 2. **Gradient mass by difficulty** — share of total advantage mass contributed by 1-of-G and (G−1)-of-G groups: higher under R2 than R3.
 3. **Gradient-norm spikes** — R2's grad norm spikes on lone-success batches; R3 stays smoother.
 
