@@ -81,7 +81,7 @@ Claim: dividing by group std amplifies near-unanimous groups — precisely the l
 
 1. **Gradient stability** — the P95/P50 ratio of grad norm (tail heaviness; the ratio cancels the two runs' different advantage scales), plus spike rate (grad norm > 3× the rolling median of the last 50 updates), and whether spikes coincide with batches containing $k = 1$ or $G-1$ groups.
 2. **Where the learning goes** — probe once at step 0: sample 8 answers per val prompt with the base model and freeze each prompt's solve rate as its difficulty label — hard (0–20%), mid (20–80%), easy (80–100%). Then plot val accuracy per bucket, alongside the share of total $|\hat{A}|$ mass contributed by near-unanimous groups.
-3. **Churn** — flip rate of solved prompts: solved at step $t$, unsolved at $t+\Delta$.
+3. **Churn** — flip rate of solved prompts: solved at step $t$, unsolved at $t+\Delta$. A prompt propped up by one amplified lucky trajectory has no redundant support — later, conflicting gradients from other prompts erode it; a prompt solved by consistent signal stays solved.
 
 If none of these separate, the honest verdict is "unbiased and simpler, at no measurable cost" — also a result.
 
