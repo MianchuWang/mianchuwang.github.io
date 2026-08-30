@@ -50,9 +50,13 @@ $$
 
 ## Ablations
 
-**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need. Three runs, each one switch apart:
+**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need.
 
-**R1** GRPO  →  **R2** R1 minus $1/\vert o_i\vert$ (token-level aggregation)  →  **R3** R2 minus $/\,\mathrm{std}$ (= Dr. GRPO)
+**Variants.** Three training runs (R = run), each one switch apart:
+
+- **R1** — GRPO, unmodified.
+- **R2** — R1 minus $1/\vert o_i\vert$: token-level aggregation, std kept.
+- **R3** — R2 minus $/\,\mathrm{std}$: both fixes, i.e. Dr. GRPO.
 
 | Exp | Compares | Isolates |
 |---|---|---|
