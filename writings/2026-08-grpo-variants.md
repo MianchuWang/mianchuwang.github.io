@@ -50,7 +50,7 @@ $$
 
 ## Ablations
 
-**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need.
+**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need. All three runs share identical config and seed; only the listed switches differ.
 
 **Variants.** Three training runs (R = run), each one switch apart:
 
@@ -69,19 +69,19 @@ A higher accuracy curve is not a verdict — it is noisy and confounded. Each ex
 
 Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long failures are punished gently and survive. Evidence to collect:
 
-1. **Length by correctness over training** — mean response length, split into wrong / correct.
-2. **Per-token weight within one batch** — among wrong rollouts of the same step, per-token loss magnitude vs response length (checks the mechanism is actually present in the loss, not just implied by the formula).
-3. **Truncation share among wrong answers** — fraction of wrong rollouts hitting the 2,048 cap.
+1. **Length by correctness over training** — mean length of training rollouts at each step, split by reward into wrong / correct.
+2. **Per-token weight within one batch** — from periodically dumped rollout batches: among wrong rollouts of one step, per-token loss weight vs response length (checks the mechanism is actually present in the loss, not just implied by the formula).
+3. **Truncation share among wrong answers** — fraction of wrong training rollouts hitting the 2,048 cap, per step.
 
 *(to fill: plots + numbers)*
 
 ### E2 — what does removing the std division buy?
 
-Claim: dividing by group std amplifies near-unanimous groups — precisely the least learnable prompts — and turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Evidence to collect:
+Claim: dividing by group std amplifies near-unanimous groups — precisely the least learnable prompts — and turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Writing $k$ for the number of correct rollouts in a group (0…$G$), evidence to collect:
 
 1. **Gradient stability** — the P95/P50 ratio of grad norm (tail heaviness; the ratio cancels the two runs' different advantage scales), plus spike rate (grad norm > 3× the rolling median of the last 50 updates), and whether spikes coincide with batches containing $k = 1$ or $G-1$ groups.
-2. **Where the learning goes** — probe once at step 0: sample 8 answers per val prompt with the base model and freeze each prompt's solve rate as its difficulty label — hard (0–20%), mid (20–80%), easy (80–100%). Then plot val accuracy per bucket, alongside the share of total $|\hat{A}|$ mass contributed by near-unanimous groups.
-3. **Churn** — flip rate of solved prompts: solved at step $t$, unsolved at $t+\Delta$. A prompt propped up by one amplified lucky trajectory has no redundant support — later, conflicting gradients from other prompts erode it; a prompt solved by consistent signal stays solved.
+2. **Where the learning goes** — probe once at step 0: sample 8 answers per val prompt with the base model and freeze each prompt's solve rate as its difficulty label — hard (0–20%), mid (20–80%), easy (80–100%). Then plot val accuracy per bucket, alongside the share of total $|\hat{A}|$ mass contributed by near-unanimous groups ($k \le 1$ or $k \ge G-1$).
+3. **Churn** — fraction of val prompts whose greedy answer flips from correct to wrong between consecutive validations. A prompt propped up by one amplified lucky trajectory has no redundant support — later, conflicting gradients from other prompts erode it; a prompt solved by consistent signal stays solved.
 
 If none of these separate, the honest verdict is "unbiased and simpler, at no measurable cost" — also a result.
 
