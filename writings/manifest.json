@@ -7,9 +7,8 @@
       "lang": "en",
       "tags": [
         "DAPO",
-        "GRPO",
-        "RL",
-        "verl"
+        "Dr. GRPO",
+        "GRPO"
       ],
       "summary": "Three critic-free RL objectives, one pipeline — what each changes in the token-weighting math, and what actually differs in training."
     },
