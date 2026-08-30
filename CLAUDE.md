@@ -29,7 +29,9 @@ no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
   identical (change one → change the other).
 - Markdown supports Notion-style callouts: blockquote starting with `[!info]`,
   `[!warning]`, etc.
-- Tool ids follow `T<yymmdd>`.
+- Tool ids follow `T<yymmdd>`; article ids `W<yymmdd>` are derived from the
+  `date` automatically (nothing to set). Tags are auto-sorted alphabetically
+  by `build_manifest.py`.
 
 ## Publishing
 
