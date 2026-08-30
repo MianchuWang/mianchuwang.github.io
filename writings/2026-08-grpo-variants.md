@@ -1,5 +1,5 @@
 ---
-title: "GRPO, Dr. GRPO, DAPO Comparisons"
+title: "GRPO Variants: Empirical Results"
 date: 2026-08-30
 tags: [DAPO, GRPO, RL, verl]
 summary: Three critic-free RL objectives, one pipeline — what each changes in the token-weighting math, and what actually differs in training.
