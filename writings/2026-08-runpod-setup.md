@@ -27,6 +27,15 @@ This is a runbook for an **AI agent with SSH access to the pod** (`Host runpod` 
 3. GPU: A40 (~$0.44/h/GPU, Ampere — bf16 yes, FP8 no). GPU count is fixed at deploy; scale by redeploying.
 4. After boot, trust env vars over the pod card: `RUNPOD_MEM_GB` is the real CPU RAM cap (**50 GB per GPU**; the card's larger number is the host's).
 
+Pods can also be deployed entirely via the GraphQL API — **`PUBLIC_KEY` must then be passed explicitly as an env var** (nothing injects it for you; a pod without it accepts no SSH key and greets you with a password prompt):
+
+```bash
+curl -s -X POST https://api.runpod.io/graphql -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $RUNPOD_API_KEY" -d '{"query":"mutation { podFindAndDeployOnDemand(input: { cloudType: ALL, gpuTypeId: \"NVIDIA A40\", gpuCount: 1, name: \"my-pod\", templateId: \"<template-id>\", containerDiskInGb: 50, volumeInGb: 100, supportPublicIp: true, env: [{ key: \"PUBLIC_KEY\", value: \"<contents of id_ed25519.pub>\" }] }) { id } }"}'
+```
+
+Poll `pod { runtime { ports } }` for the SSH ip/port once it boots.
+
 ## 3. SSH access
 
 `~/.ssh/config` on the user's machine (IP/port change per pod — read them from the pod's Connect panel, or `RUNPOD_PUBLIC_IP` / `RUNPOD_TCP_PORT_22` in `/proc/1/environ`):
@@ -44,11 +53,9 @@ Host runpod
     ServerAliveCountMax 6
 ```
 
-Verify: `ssh -o BatchMode=yes runpod 'echo ok'`. If **Permission denied**: the pod is missing the public key — the user opens the RunPod **Web Terminal** and appends it:
+Verify: `ssh -o BatchMode=yes runpod 'echo ok'`. If **Permission denied**, the pod is missing `PUBLIC_KEY`. Fix it via the API — add the env with `podEditJob`, then `podStop` + `podResume` (the port changes) — or, as a last resort, paste the key into `~/.ssh/authorized_keys` from the Web Terminal.
 
-```bash
-mkdir -p ~/.ssh && echo '<PUBKEY_LINE>' >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
-```
+With `ForwardAgent yes` and the key loaded locally (`ssh-add`), the pod can also push to GitHub (use SSH remotes, not HTTPS) and SSH onward to sibling pods — no credentials ever land on the pod.
 
 ## 4. Environment (agent, over SSH, idempotent)
 
@@ -107,6 +114,15 @@ python -m verl.trainer.main_ppo --cfg job > /dev/null && echo VERL_CONFIG_OK
 ```
 
 Environment is done. Clone the project repo (check **all branches** — work may live on a feature branch; cloning uses the user's forwarded agent, so run it from an SSH session, not the Web Terminal) and follow its README from here.
+
+**Cloning a whole pod** (fan-out for parallel runs): a sibling pod on the same account can be filled from a finished one in minutes — env, venv, model cache and all — instead of rebuilding:
+
+```bash
+ssh -A pod1 'cd /workspace && tar czf - setup.sh bin verl verl-playground data .venv .cache/huggingface \
+  | ssh -o StrictHostKeyChecking=accept-new -p <port2> root@<ip2> "cd /workspace && tar xzf -"'
+```
+
+(`tar` ownership warnings on the network volume are harmless.) Then per-pod bootstrap (§4.2) on the new pod and it is ready.
 
 ## 5. Running
 
