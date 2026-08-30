@@ -50,10 +50,35 @@ $$
 
 ## Ablations
 
-Setup for every run: identical to [W260828](post.html?p=2026-08-grpo-a40-scaling)'s 1-GPU run except the listed switch. E0's 2-GPU twin provides the noise band: a difference within ±0.01 val acc is not a finding.
+**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need. Three runs, each one switch apart:
 
-| ID | Change | Question | Registered prediction |
-|---|---|---|---|
-| E1 | remove $1/\vert o_i\vert$ (token-level aggregation) | what does the per-sequence normalizer actually do? | mean length of *wrong* answers rises under E0, stays flat under E1; val acc within noise |
+**R1** GRPO  →  **R2** R1 minus $1/\vert o_i\vert$ (token-level aggregation)  →  **R3** R2 minus $/\,\mathrm{std}$ (= Dr. GRPO)
+
+| Exp | Compares | Isolates |
+|---|---|---|
+| E1 | R1 vs R2 | the $1/\vert o_i\vert$ length bias |
+| E2 | R2 vs R3 | the $/\,\mathrm{std}$ difficulty bias |
+
+A higher accuracy curve is not a verdict — it is noisy and confounded. Each experiment must produce direct evidence that its mechanism operated.
+
+### E1 — what does $1/|o_i|$ actually do?
+
+Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long failures are punished gently and survive. Evidence to collect:
+
+1. **Length by correctness over training** — mean response length split into wrong / correct. R1: wrong lengthens, correct shortens; R2: both flat.
+2. **Per-token weight within one batch** — among wrong rollouts of the same step, per-token loss magnitude vs length: $\propto 1/|o|$ under R1, flat under R2 (checks the mechanism is present in the loss, not just implied by the formula).
+3. **Truncation share among wrong answers** — fraction of wrong rollouts hitting the 2,048 cap: rises under R1 only.
+
+*(to fill: plots + numbers)*
+
+### E2 — what does dividing by std actually do?
+
+Claim: near-unanimous groups have tiny std, so the lone deviant's advantage is inflated — 1 correct out of 5 gives that rollout $\hat{A} = 2.0$, vs $1.0$ in a balanced group. Evidence to collect:
+
+1. **$|\hat{A}|$ vs group outcome** — mean $|\hat{A}|$ binned by correct-count in the group (0…G): with std the extremes dominate (U-shape); without, balanced groups do (∩-shape).
+2. **Gradient mass by difficulty** — share of total advantage mass contributed by 1-of-G and (G−1)-of-G groups: higher under R2 than R3.
+3. **Gradient-norm spikes** — R2's grad norm spikes on lone-success batches; R3 stays smoother.
+
+*(to fill: plots + numbers)*
 
 *(Next: mapping each switch onto verl config, then the runs.)*
