@@ -665,3 +665,15 @@ a {
   font-weight: 500;
 }
 .tag-agent::before { content: "🤖 "; }
+
+/* Page id badge shown top-left above article/tool titles (W<yymmdd> / T<yymmdd>). */
+.page-id {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--fg-faint);
+  border: 1px solid var(--divider);
+  border-radius: 5px;
+  padding: 1px 7px;
+  margin-bottom: 10px;
+}

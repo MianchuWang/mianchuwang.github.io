@@ -40,6 +40,12 @@ async function main() {
   if (meta.lang) document.documentElement.lang = meta.lang;
   titleEl.textContent = title;
 
+  if (meta.date) {
+    const idEl = document.getElementById("article-id");
+    idEl.textContent = `W${meta.date.replaceAll("-", "").slice(2)}`;
+    idEl.hidden = false;
+  }
+
   const tags = (meta.tags || [])
     .map?.((t) => `<span class="${tagClass(t)}">${t}</span>`)
     .join("") || "";
