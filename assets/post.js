@@ -3,6 +3,7 @@ import {
   renderMarkdown,
   upgradeCallouts,
   formatDate,
+  tagClass,
   initTheme,
 } from "./md.js";
 import { initCharts } from "./chart.js";
@@ -40,7 +41,7 @@ async function main() {
   titleEl.textContent = title;
 
   const tags = (meta.tags || [])
-    .map?.((t) => `<span class="tag">${t}</span>`)
+    .map?.((t) => `<span class="${tagClass(t)}">${t}</span>`)
     .join("") || "";
   metaEl.innerHTML = `<span>${formatDate(meta.date)}</span>${tags}`;
 

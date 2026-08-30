@@ -108,6 +108,14 @@ export function renderMarkdown(body) {
   return marked.parse(body);
 }
 
+/* Tags with a dedicated chip style (matched case-insensitively). */
+const SPECIAL_TAGS = { "wandb": "tag-wandb", "agent runbook": "tag-agent" };
+
+export function tagClass(tag) {
+  const extra = SPECIAL_TAGS[tag.toLowerCase()];
+  return extra ? `tag ${extra}` : "tag";
+}
+
 export function formatDate(iso) {
   if (!iso) return "";
   const d = new Date(iso + "T00:00:00");

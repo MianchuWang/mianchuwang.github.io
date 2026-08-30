@@ -658,3 +658,10 @@ a {
 .chart-data summary { font-size: 12px; color: var(--fg-faint); cursor: pointer; margin-top: 6px; }
 .chart-data-scroll { max-height: 240px; overflow: auto; margin-top: 6px; }
 .chart-data table { font-size: 12px; margin: 0; }
+
+.tag-agent {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
+.tag-agent::before { content: "🤖 "; }

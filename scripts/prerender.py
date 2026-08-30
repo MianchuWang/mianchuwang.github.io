@@ -111,8 +111,9 @@ def posts_html(posts):
     for p in posts:
         lang = f' lang="{p["lang"]}"' if p.get("lang") and p["lang"] != "en" else ""
         wid = f'<span class="tool-id">W{p["date"].replace("-", "")[2:]}</span>' if p.get("date") else ""
+        special = {"wandb": " tag-wandb", "agent runbook": " tag-agent"}  # mirror tagClass() in md.js
         tags = "".join(
-            f'<span class="tag{" tag-wandb" if t.lower() == "wandb" else ""}">{t}</span>'
+            f'<span class="tag{special.get(t.lower(), "")}">{t}</span>'
             for t in p.get("tags", [])
         )
         tags = f'<span class="post-tags">{wid}{tags}</span>'

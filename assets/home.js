@@ -1,4 +1,4 @@
-import { formatDate, initTheme } from "./md.js";
+import { formatDate, tagClass, initTheme } from "./md.js";
 
 initTheme();
 
@@ -15,7 +15,7 @@ function renderList(posts) {
       <a href="${href}"${external}${p.lang && p.lang !== "en" ? ` lang="${p.lang}"` : ""}>
         <span class="post-main">
           <span class="post-title">${p.title}</span>
-          <span class="post-tags">${p.date ? `<span class="tool-id">W${p.date.replaceAll("-", "").slice(2)}</span>` : ""}${(p.tags || []).map((t) => `<span class="tag${t.toLowerCase() === "wandb" ? " tag-wandb" : ""}">${t}</span>`).join("")}</span>
+          <span class="post-tags">${p.date ? `<span class="tool-id">W${p.date.replaceAll("-", "").slice(2)}</span>` : ""}${(p.tags || []).map((t) => `<span class="${tagClass(t)}">${t}</span>`).join("")}</span>
         </span>
         <span class="post-date">${formatDate(p.date)}</span>
       </a>`;
