@@ -30,10 +30,10 @@ $$
 \min\!\big(\rho_{i,t}\hat{A}_i,\ \mathrm{clip}(\rho_{i,t},\,1\pm\varepsilon)\,\hat{A}_i\big)
 $$
 
-- **$1/|o_i|$ gone** — GRPO's normalizer means well: give every rollout equal total weight regardless of length. But per *token* that suppresses a long failure more weakly (and reinforces a long success more weakly) than a short one — so it effectively encourages long wrong rollouts and short correct ones (prediction: wrong-answer length grows under GRPO, not here).
+- **$1/|o_i|$ gone** — it gave every rollout equal total weight, but per *token* that suppresses long failures (and reinforces long successes) more weakly than short ones — effectively encouraging long wrong rollouts and short correct ones.
 - **$/\,\mathrm{std}$ gone** — near-solved / near-impossible questions have tiny std and got outsized advantages.
 
-> [!info] **This is objective hacking.** The reward itself is never gamed — no rollout earns more by being long. The gap sits between the *intended* objective (reward) and the *implemented* surrogate: under $1/|o_i|$, the optimizer can lower the surrogate by parking failure probability mass in its least-punished variants — the long ones — without improving correctness at all. Same species as reward hacking, one level down.
+> [!info] **Objective hacking.** The reward is never gamed — nothing earns more by being long. The gap sits between the intended objective and the implemented surrogate: under $1/|o_i|$ the optimizer lowers the surrogate by parking failure mass in its least-punished (long) variants, correctness unchanged.
 
 ### DAPO — four changes, no KL
 
@@ -42,7 +42,7 @@ $$
 \min\!\big(\rho_{i,t}\hat{A}_i,\ \mathrm{clip}(\rho_{i,t},\,1-\varepsilon_{\mathrm{low}},\,1+\varepsilon_{\mathrm{high}})\,\hat{A}_i\big)
 $$
 
-- **Token-level $1/\sum_i|o_i|$** — same length-bias fix as Dr. GRPO ($\hat{A}_i$ stays GRPO's). Within a batch the two weight tokens identically (the denominator is one constant per batch); it only stabilizes the step size across batches, where Dr. GRPO's $1/G$ lets verbose batches take bigger steps.
+- **Token-level $1/\sum_i|o_i|$** — same length-bias fix as Dr. GRPO ($\hat{A}_i$ stays GRPO's); the different denominator only stabilizes step size across batches.
 - **Clip-higher** ($\varepsilon_{\mathrm{high}}=0.28 > \varepsilon_{\mathrm{low}}=0.2$) — a symmetric ceiling chokes rare tokens' growth → entropy collapse; raise only the ceiling.
 - **Dynamic sampling** — all-correct / all-wrong groups have $\hat{A}=0$, zero gradient; filter and resample until the batch is live.
 - **Overlong shaping** — truncated responses get a soft penalty, not a spurious reward.
