@@ -75,13 +75,15 @@ Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long fai
 
 *(to fill: plots + numbers)*
 
-### E2 — what does dividing by std actually do?
+### E2 — what does removing the std division buy?
 
-Claim: near-unanimous groups have tiny std, so the lone deviant's advantage is inflated — 1 correct out of 5 gives that rollout $\hat{A} = 2.0$, vs $1.0$ in a balanced group. Evidence to collect:
+Claim: dividing by group std amplifies near-unanimous groups — by $G/\sqrt{k(G-k)}$, ≈2.5× at $k=1$ vs ≈2.0 balanced at $G=5$ — which are precisely the least learnable prompts, and it turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Evidence to collect:
 
-1. **Amplification by group outcome** — for each group, let $k$ = number of correct rollouts. Averaging $|\hat{A}|$ over all groups with the same $k$, the with-std / without-std ratio should trace $G/\sqrt{k(G-k)}$: ≈2.5 at $k = 1$ or $G-1$ vs ≈2.0 for balanced groups ($G=5$) — the std division amplifies near-unanimous groups the most. (The spread is modest at $G=5$; raising rollout $n$ sharpens it.)
-2. **Gradient mass by difficulty** — share of total advantage mass contributed by 1-of-G and (G−1)-of-G groups: higher under R2 than R3.
-3. **Gradient-norm spikes** — R2's grad norm spikes on lone-success batches; R3 stays smoother.
+1. **Gradient stability** — grad-norm variance and spike rate, R2 vs R3; R2's spikes should coincide with batches containing $k = 1$ or $G-1$ groups.
+2. **Where the learning goes** — bucket prompts by early solve rate and track per-bucket accuracy: R3 should gain fastest on mid-difficulty prompts, while R2 diverts advantage mass to the extremes (measurable as the share of total $|\hat{A}|$ coming from near-unanimous groups).
+3. **Churn** — flip rate of solved prompts (solved at step $t$, unsolved at $t+\Delta$): over-reinforced lucky successes predict higher churn under R2.
+
+If none of these separate, the honest verdict is "unbiased and simpler, at no measurable cost" — also a result.
 
 *(to fill: plots + numbers)*
 
