@@ -5,6 +5,7 @@ import {
   formatDate,
   initTheme,
 } from "./md.js";
+import { initCharts } from "./chart.js";
 
 initTheme();
 
@@ -45,6 +46,7 @@ async function main() {
 
   bodyEl.innerHTML = renderMarkdown(body);
   upgradeCallouts(bodyEl);
+  initCharts(bodyEl);
   addHeadingAnchors();
   addCopyButtons();
   buildToc();

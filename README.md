@@ -29,6 +29,15 @@ run the prerender step locally before pushing.
    `writings/technical-writing-template.md` for everything the renderer
    supports (math, callouts, tables, code highlighting, TOC, …).
 
+   For interactive, theme-aware line charts, put the data in a JSON file under
+   `writings/figures/` and embed (see `assets/chart.js` for the schema):
+
+   ```html
+   <div class="chart" data-src="writings/figures/<id>.json" data-metric="acc">
+     fallback text with a link to the raw data
+   </div>
+   ```
+
 2. **Run `python3 scripts/prerender.py`** — it regenerates
    `writings/manifest.json` (never edit by hand), re-bakes the homepage's
    static HTML between the `<!--bake:*-->` markers in `index.html`, and

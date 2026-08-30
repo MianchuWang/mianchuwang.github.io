@@ -33,7 +33,7 @@ for mb in split(batch, 2):                      # 2 gradient updates per step
 
 Both runs consume the same global batches in the same order, so correct data parallelism should trace *the same curve*. It does: final val accuracy **0.777 (1 GPU) vs 0.789 (2 GPUs)**, inside the ±0.01 step-to-step noise. The overlap is the correctness certificate for the speed comparison that follows.
 
-![GSM8K validation accuracy, 1 vs 2 GPUs](writings/figures/w260830-val-acc.png)
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="acc">GSM8K validation accuracy, 1 vs 2 GPUs — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
 
 Shape: accuracy jumps 0.09 → 0.72 in 10 steps — that is the model learning the `#### <answer>` format, not math. The remaining 220 steps grind 0.75 → 0.79; the second epoch is worth ~3–4 points.
 
@@ -56,7 +56,7 @@ The pattern: the less communication a phase needs, the better it scales. The cau
 
 MFU falls **31% → 18%** while `nvidia-smi` reads ~100% on both cards — NCCL kernels busy-wait, so "busy" includes "waiting". Utilization ≠ useful math; that is what MFU is for.
 
-![MFU during the actor update](writings/figures/w260830-mfu.png)
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="mfu">MFU during the actor update, 1 vs 2 GPUs — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
 
 ### The mechanics behind 1.12×
 
