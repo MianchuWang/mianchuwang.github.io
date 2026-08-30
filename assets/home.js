@@ -15,7 +15,7 @@ function renderList(posts) {
       <a href="${href}"${external}${p.lang && p.lang !== "en" ? ` lang="${p.lang}"` : ""}>
         <span class="post-main">
           <span class="post-title">${p.title}</span>
-          ${p.summary ? `<span class="post-summary">${p.summary}</span>` : ""}
+          ${(p.tags || []).length ? `<span class="post-tags">${p.tags.map((t) => `<span class="tag">${t}</span>`).join("")}</span>` : ""}
         </span>
         <span class="post-date">${formatDate(p.date)}</span>
       </a>`;

@@ -17,8 +17,8 @@ no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
 
 - Article frontmatter: `title`, `date`, `tags`, `summary`.
   - `date` is the **creation date — never bump it on edits**.
-  - `summary` is one short sentence; it is displayed under the title on the
-    homepage list, so keep it tight.
+  - `summary` is one short sentence; it feeds `llms.txt` (the homepage list
+    shows tags instead).
 - **After changing frontmatter or any `profile/*.json`, run
   `python3 scripts/prerender.py`.** It regenerates `writings/manifest.json`
   (never edit that by hand) and re-bakes the homepage's static HTML between

@@ -110,16 +110,15 @@ def posts_html(posts):
     lis = []
     for p in posts:
         lang = f' lang="{p["lang"]}"' if p.get("lang") and p["lang"] != "en" else ""
-        summary = (
-            f'<span class="post-summary">{p["summary"]}</span>' if p.get("summary") else ""
-        )
+        tags = "".join(f'<span class="tag">{t}</span>' for t in p.get("tags", []))
+        tags = f'<span class="post-tags">{tags}</span>' if tags else ""
         href = p.get("url") or f'post.html?p={p["slug"]}'
         external = ' target="_blank" rel="noopener"' if p.get("url") else ""
         lis.append(
             f'<li>\n      <a href="{href}"{external}{lang}>\n'
             f'        <span class="post-main">\n'
             f'          <span class="post-title">{p["title"]}</span>\n'
-            f"          {summary}\n"
+            f"          {tags}\n"
             f"        </span>\n"
             f'        <span class="post-date">{format_date(p["date"])}</span>\n'
             f"      </a></li>"

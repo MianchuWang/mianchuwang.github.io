@@ -219,10 +219,10 @@ a {
   gap: 2px;
 }
 
-.post-list .post-summary {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--fg-faint);
+.post-list .post-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .post-list .post-date {
