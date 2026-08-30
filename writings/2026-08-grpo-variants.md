@@ -53,6 +53,6 @@ keeping GRPO's normalized $\hat{A}_i$, plus rules about *which data reaches the 
 - **Dynamic sampling**: a group that is all-correct or all-wrong has $\hat{A}_i = 0$ for every member — zero gradient, dead compute — and the dead fraction *grows* as accuracy improves. Filter those groups and resample until the batch is full of live ones.
 - **Overlong shaping**: responses cut by the length limit get a soft penalty instead of a spurious full reward or silent truncation.
 
-DAPO also sets $\beta = 0$: no KL term, no reference model — reasoning training drifts far from the initial policy anyway, and the leash costs a full forward pass per step (8.4 s/step on our A40, per W260830).
+DAPO also sets $\beta = 0$: no KL term, no reference model — reasoning training drifts far from the initial policy anyway, and the leash costs a full forward pass per step (8.4 s/step on our A40, per W260828).
 
 *(Next: mapping each change onto verl switches, then the runs.)*

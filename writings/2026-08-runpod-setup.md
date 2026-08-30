@@ -1,6 +1,6 @@
 ---
 title: "Setting Up RunPod for verl"
-date: 2026-08-28
+date: 2026-08-27
 tags: [Runbook, RunPod, verl]
 summary: An agent-executable runbook for setting up verl on a fresh RunPod pod.
 ---

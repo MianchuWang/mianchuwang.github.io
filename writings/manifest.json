@@ -3,7 +3,7 @@
     {
       "slug": "2026-08-grpo-a40-scaling",
       "title": "Fine-tuning Qwen2.5-1.5B-Instruct on GSM8K with Single/Double A40 GPUs",
-      "date": "2026-08-30",
+      "date": "2026-08-28",
       "lang": "en",
       "tags": [
         "GPU",
@@ -15,7 +15,7 @@
     {
       "slug": "2026-08-runpod-setup",
       "title": "Setting Up RunPod for verl",
-      "date": "2026-08-28",
+      "date": "2026-08-27",
       "lang": "en",
       "tags": [
         "Runbook",
