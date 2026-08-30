@@ -19,10 +19,14 @@ no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
   - `date` is the **creation date — never bump it on edits**.
   - `summary` is one short sentence; it is displayed under the title on the
     homepage list, so keep it tight.
-- **After changing any frontmatter, run `python3 scripts/build_manifest.py`.**
-  The homepage reads `writings/manifest.json`; it is generated — never edit it
-  by hand, and don't forget to regenerate it (a stale manifest silently shows
-  old titles).
+- **After changing frontmatter or any `profile/*.json`, run
+  `python3 scripts/prerender.py`.** It regenerates `writings/manifest.json`
+  (never edit that by hand) and re-bakes the homepage's static HTML between
+  the `<!--bake:*-->` markers in `index.html` — the baked copy is what
+  crawlers and non-JS agents see, so a stale bake silently shows them old
+  content. Never edit inside the bake markers by hand; `assets/home.js`
+  re-renders the same markup at runtime, and the two must stay structurally
+  identical (change one → change the other).
 - Markdown supports Notion-style callouts: blockquote starting with `[!info]`,
   `[!warning]`, etc.
 - Tool ids follow `T<yymmdd>`.

@@ -62,6 +62,7 @@ function renderProfile(profile) {
     document.getElementById("hero-bio").innerHTML = profile.bio;
   }
   const linksEl = document.getElementById("hero-links");
+  linksEl.replaceChildren(); // drop prerendered copies before re-rendering
   for (const link of profile.links || []) {
     // Entries without a url render as plain text (e.g. spam-safe email).
     if (!link.url) {
@@ -83,6 +84,7 @@ function renderProfile(profile) {
 
 function renderHeroCv(profile) {
   const cvEl = document.getElementById("hero-cv");
+  cvEl.replaceChildren(); // drop prerendered copies before re-rendering
   const columns = [
     { key: "experience", title: "Experience" },
     { key: "education", title: "Education" },
@@ -124,7 +126,10 @@ async function main() {
     renderProfile(profile);
     renderHeroCv(profile);
   } catch {
-    listEl.innerHTML = `<div class="empty-note">Could not load writings/manifest.json — run <code>python3 scripts/build_manifest.py</code>.</div>`;
+    // Keep the prerendered static content if the live fetch fails.
+    if (!listEl.querySelector(".section-title")) {
+      listEl.innerHTML = `<div class="empty-note">Could not load writings/manifest.json — run <code>python3 scripts/build_manifest.py</code>.</div>`;
+    }
     return;
   }
 
