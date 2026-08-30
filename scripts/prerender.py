@@ -146,6 +146,38 @@ def bake(html, name, content):
     return pattern.sub(lambda m: m.group(1) + content + m.group(2), html)
 
 
+SITE = "https://mianchuwang.github.io"
+
+
+def llms_txt(profile, pubs, tools, posts):
+    """Generate llms.txt — a markdown index for LLM agents, pointing articles
+    at their raw .md files (post.html is an empty JS shell to a non-JS fetcher)."""
+    bio_text = " ".join(re.sub(r"<[^>]+>", " ", profile.get("bio", "")).split())
+    lines = [f"# {profile.get('name', 'Mianchu Wang')}", "", f"> {bio_text}", ""]
+    if posts:
+        lines += ["## Writing", ""]
+        lines += [
+            f"- [{p['title']}]({SITE}/writings/{p['slug']}.md): {p.get('summary', '')} "
+            f"(raw markdown; human version at {SITE}/post.html?p={p['slug']})"
+            for p in posts
+        ]
+        lines += [""]
+    if pubs:
+        lines += ["## Publications", ""]
+        lines += [
+            f"- [{pub['title']}]({pub.get('url', '')}): {pub['venueShort']} {pub['year']}"
+            for pub in pubs
+        ]
+        lines += [""]
+    if tools:
+        lines += ["## Tools", ""]
+        lines += [
+            f"- [{t['title']}]({SITE}/{t['url']}): {t.get('description', '')}" for t in tools
+        ]
+        lines += [""]
+    return "\n".join(lines)
+
+
 def main():
     subprocess.run([sys.executable, str(ROOT / "scripts" / "build_manifest.py")], check=True)
 
@@ -161,8 +193,11 @@ def main():
     html = bake(html, "sections", sections_html(pubs, tools, posts))
     INDEX.write_text(html, encoding="utf-8")
 
+    (ROOT / "llms.txt").write_text(llms_txt(profile, pubs, tools, posts), encoding="utf-8")
+
     text = re.sub(r"<[^>]+>", " ", re.sub(r"<script.*?</script>", "", html, flags=re.S))
     print(f"Baked index.html — {len(' '.join(text.split()))} chars of static text")
+    print("Wrote llms.txt")
 
 
 if __name__ == "__main__":

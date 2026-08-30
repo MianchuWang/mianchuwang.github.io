@@ -1,0 +1,19 @@
+# Mianchu Wang
+
+> Hi there 👋 I'm Mianchu, a Research Scientist at IBM Research UK. Before joining IBM, I completed my PhD and worked as a Research Fellow at the University of Warwick. I have been fortunate to be supervised by Prof. Giovanni Montana during my PhD, and guided by Dr Geeth de Mel in my industry research. My research focuses on reinforcement learning and its applications. These days I'm increasingly drawn to large-scale training and algorithms for modern language models.
+
+## Writing
+
+- [Setting Up RunPod for verl](https://mianchuwang.github.io/writings/2026-08-runpod-setup.md): An agent-executable runbook for setting up verl on a fresh RunPod pod. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-08-runpod-setup)
+
+## Publications
+
+- [Retrosynthesis Planning via Worst-Path Policy Optimisation in Tree-Structured MDPs](https://openreview.net/forum?id=m7uj1vIZ62): NeurIPS 2025
+- [Learning on One Mode: Addressing Multi-Modality in Offline Reinforcement Learning](https://openreview.net/forum?id=upkxzurnLC): ICLR 2025
+- [GOPlan: Goal-Conditioned Offline Reinforcement Learning by Planning with Learned Models](https://openreview.net/forum?id=zOKAmm8R9B): TMLR 2024
+- [Goal-Conditioned Offline Reinforcement Learning through State Space Partitioning](https://link.springer.com/article/10.1007/s10994-023-06500-z): Machine Learning 2024
+
+## Tools
+
+- [CS336 Learning Tools](https://mianchuwang.github.io/tools/cs336-quiz/): Interactive quizzes for Stanford CS336.
+- [Build a Transformer in 150 Minutes](https://mianchuwang.github.io/tools/build-transformer/): Implement every core transformer component in numpy and einops in the browser.
