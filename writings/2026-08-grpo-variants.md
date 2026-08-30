@@ -79,7 +79,7 @@ Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long fai
 
 Claim: dividing by group std amplifies near-unanimous groups — precisely the least learnable prompts — and turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Evidence to collect:
 
-1. **Gradient stability** — grad-norm variance and spike rate, R2 vs R3; R2's spikes should coincide with batches containing $k = 1$ or $G-1$ groups.
+1. **Gradient stability** — headline number: the P95/P50 ratio of grad norm (tail heaviness; the ratio cancels the two runs' different advantage scales). Secondary: spike rate, pre-registered as grad norm > 3× the rolling median of the last 50 updates. R2's spikes should coincide with batches containing $k = 1$ or $G-1$ groups.
 2. **Where the learning goes** — bucket prompts by early solve rate and track per-bucket accuracy: R3 should gain fastest on mid-difficulty prompts, while R2 diverts advantage mass to the extremes (measurable as the share of total $|\hat{A}|$ coming from near-unanimous groups).
 3. **Churn** — flip rate of solved prompts (solved at step $t$, unsolved at $t+\Delta$): over-reinforced lucky successes predict higher churn under R2.
 
