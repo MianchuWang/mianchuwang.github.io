@@ -46,8 +46,4 @@ $$
 - **Overlong shaping** — truncated responses get a soft penalty, not a spurious reward.
 - **$\beta = 0$** — no KL, no ref model, one fewer forward pass per step (8.4 s on our A40, per [W260828](post.html?p=2026-08-grpo-a40-scaling)).
 
-> [!note] **Do the normalizers prefer long responses?** No. Near $\rho = 1$,
-> $$J_{\mathrm{Dr.GRPO}} \approx \frac{1}{G}\sum_i |o_i|\,\hat{A}_i, \qquad \sum_i \hat{A}_i = 0$$
-> so lengthening every response just scales a mean-centered sum: a two-response group with $\hat{A} = \pm 1$ and length $L$ gives $\frac{1}{2}(L - L) = 0$ for any $L$. The normalizers — $G$ for Dr. GRPO, $G\,\overline{|o|}$ for DAPO — therefore change only the **magnitude and variance** of the gradient (verbose batches take bigger, noisier steps under Dr. GRPO, stable ones under DAPO), never its **direction**. The one *directional* length bias in this family is GRPO's $1/|o_i|$, which shrinks long sequences' weight asymmetrically.
-
 *(Next: mapping each change onto verl switches, then the runs.)*
