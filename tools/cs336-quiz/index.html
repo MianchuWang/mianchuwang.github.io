@@ -85,5 +85,13 @@
       location.reload();
     });
   </script>
+  <script>
+    document.querySelector(".back-link")?.addEventListener("click", (e) => {
+      if (history.length > 1 && document.referrer.startsWith(location.origin)) {
+        e.preventDefault();
+        history.back();
+      }
+    });
+  </script>
 </body>
 </html>

@@ -10,6 +10,15 @@ import { initCharts } from "./chart.js";
 
 initTheme();
 
+// "Back" as real history navigation when we came from this site, so the
+// homepage restores its scroll position; plain link otherwise.
+document.querySelector(".back-link")?.addEventListener("click", (e) => {
+  if (history.length > 1 && document.referrer.startsWith(location.origin)) {
+    e.preventDefault();
+    history.back();
+  }
+});
+
 const params = new URLSearchParams(location.search);
 const slug = params.get("p");
 
