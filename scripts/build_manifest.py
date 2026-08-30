@@ -49,6 +49,11 @@ def main() -> None:
             }
         )
 
+    external = CONTENT / "external.json"
+    if external.exists():
+        for p in json.loads(external.read_text(encoding="utf-8")).get("posts", []):
+            posts.append(p)  # entries carry "url" instead of "slug"
+
     posts.sort(key=lambda p: p["date"], reverse=True)
     out = CONTENT / "manifest.json"
     out.write_text(

@@ -113,8 +113,10 @@ def posts_html(posts):
         summary = (
             f'<span class="post-summary">{p["summary"]}</span>' if p.get("summary") else ""
         )
+        href = p.get("url") or f'post.html?p={p["slug"]}'
+        external = ' target="_blank" rel="noopener"' if p.get("url") else ""
         lis.append(
-            f'<li>\n      <a href="post.html?p={p["slug"]}"{lang}>\n'
+            f'<li>\n      <a href="{href}"{external}{lang}>\n'
             f'        <span class="post-main">\n'
             f'          <span class="post-title">{p["title"]}</span>\n'
             f"          {summary}\n"
@@ -156,11 +158,14 @@ def llms_txt(profile, pubs, tools, posts):
     lines = [f"# {profile.get('name', 'Mianchu Wang')}", "", f"> {bio_text}", ""]
     if posts:
         lines += ["## Writing", ""]
-        lines += [
-            f"- [{p['title']}]({SITE}/writings/{p['slug']}.md): {p.get('summary', '')} "
-            f"(raw markdown; human version at {SITE}/post.html?p={p['slug']})"
-            for p in posts
-        ]
+        for p in posts:
+            if p.get("url"):
+                lines.append(f"- [{p['title']}]({p['url']}): {p.get('summary', '')}")
+            else:
+                lines.append(
+                    f"- [{p['title']}]({SITE}/writings/{p['slug']}.md): {p.get('summary', '')} "
+                    f"(raw markdown; human version at {SITE}/post.html?p={p['slug']})"
+                )
         lines += [""]
     if pubs:
         lines += ["## Publications", ""]

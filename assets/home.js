@@ -9,8 +9,10 @@ function renderList(posts) {
   ul.className = "post-list";
   for (const p of posts) {
     const li = document.createElement("li");
+    const href = p.url || `post.html?p=${encodeURIComponent(p.slug)}`;
+    const external = p.url ? ` target="_blank" rel="noopener"` : "";
     li.innerHTML = `
-      <a href="post.html?p=${encodeURIComponent(p.slug)}"${p.lang && p.lang !== "en" ? ` lang="${p.lang}"` : ""}>
+      <a href="${href}"${external}${p.lang && p.lang !== "en" ? ` lang="${p.lang}"` : ""}>
         <span class="post-main">
           <span class="post-title">${p.title}</span>
           ${p.summary ? `<span class="post-summary">${p.summary}</span>` : ""}

@@ -4,26 +4,9 @@
       "title": "Fine-tuning Qwen2.5-1.5B-Instruct on GSM8K with Single/Double A40 GPUs",
       "date": "2026-08-30",
       "lang": "en",
-      "tags": [
-        "RL",
-        "verl",
-        "GPU"
-      ],
+      "tags": ["RL", "verl", "GPU"],
       "summary": "A 1-vs-2 GPU GRPO comparison: where the speedup went, phase by phase (wandb report).",
       "url": "https://wandb.ai/mianchu/vp1_grpo_gsm8k/reports/Fine-tuning-Qwen2-5-1-5B-Instruct-on-GSM8K-with-Single-Double-A40-GPUs--VmlldzoxNzgyNzczNQ"
-    },
-    {
-      "slug": "2026-08-runpod-setup",
-      "title": "Setting Up RunPod for verl",
-      "date": "2026-08-28",
-      "lang": "en",
-      "tags": [
-        "Infrastructure",
-        "RunPod",
-        "verl",
-        "Runbook"
-      ],
-      "summary": "An agent-executable runbook for setting up verl on a fresh RunPod pod."
     }
   ]
 }
