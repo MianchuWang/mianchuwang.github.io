@@ -40,10 +40,10 @@ $$
 \min\!\big(\rho_{i,t}\hat{A}_i,\ \mathrm{clip}(\rho_{i,t},\,1-\varepsilon_{\mathrm{low}},\,1+\varepsilon_{\mathrm{high}})\,\hat{A}_i\big)
 $$
 
-- **Token-level $1/\sum_i|o_i|$** — same length-bias fix as Dr. GRPO, different normalizer ($\hat{A}_i$ stays GRPO's).
+- **Token-level $1/\sum_i|o_i|$** — same length-bias fix as Dr. GRPO ($\hat{A}_i$ stays GRPO's). Within a batch the two weight tokens identically (the denominator is one constant per batch); it only stabilizes the step size across batches, where Dr. GRPO's $1/G$ lets verbose batches take bigger steps.
 - **Clip-higher** ($\varepsilon_{\mathrm{high}}=0.28 > \varepsilon_{\mathrm{low}}=0.2$) — a symmetric ceiling chokes rare tokens' growth → entropy collapse; raise only the ceiling.
 - **Dynamic sampling** — all-correct / all-wrong groups have $\hat{A}=0$, zero gradient; filter and resample until the batch is live.
 - **Overlong shaping** — truncated responses get a soft penalty, not a spurious reward.
-- **$\beta = 0$** — no KL, no ref model, one fewer forward pass per step (8.4 s on our A40, per W260828).
+- **$\beta = 0$** — no KL, no ref model, one fewer forward pass per step (8.4 s on our A40, per [W260828](post.html?p=2026-08-grpo-a40-scaling)).
 
 *(Next: mapping each change onto verl switches, then the runs.)*
