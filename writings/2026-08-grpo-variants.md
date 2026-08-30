@@ -52,7 +52,6 @@ Setup for every run: identical to [W260828](post.html?p=2026-08-grpo-a40-scaling
 
 | ID | Change | Question | Registered prediction |
 |---|---|---|---|
-| E0 | GRPO baseline (done: W260828) | — | — |
 | E1 | remove $1/\vert o_i\vert$ (token-level aggregation) | what does the per-sequence normalizer actually do? | mean length of *wrong* answers rises under E0, stays flat under E1; val acc within noise |
 
 *(Next: mapping each switch onto verl config, then the runs.)*
