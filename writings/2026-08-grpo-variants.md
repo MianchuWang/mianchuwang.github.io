@@ -69,9 +69,9 @@ A higher accuracy curve is not a verdict — it is noisy and confounded. Each ex
 
 Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long failures are punished gently and survive. Evidence to collect:
 
-1. **Length by correctness over training** — mean response length split into wrong / correct. R1: wrong lengthens, correct shortens; R2: both flat.
-2. **Per-token weight within one batch** — among wrong rollouts of the same step, per-token loss magnitude vs length: $\propto 1/|o|$ under R1, flat under R2 (checks the mechanism is present in the loss, not just implied by the formula).
-3. **Truncation share among wrong answers** — fraction of wrong rollouts hitting the 2,048 cap: rises under R1 only.
+1. **Length by correctness over training** — mean response length, split into wrong / correct.
+2. **Per-token weight within one batch** — among wrong rollouts of the same step, per-token loss magnitude vs response length (checks the mechanism is actually present in the loss, not just implied by the formula).
+3. **Truncation share among wrong answers** — fraction of wrong rollouts hitting the 2,048 cap.
 
 *(to fill: plots + numbers)*
 
@@ -79,9 +79,9 @@ Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long fai
 
 Claim: dividing by group std amplifies near-unanimous groups — precisely the least learnable prompts — and turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Evidence to collect:
 
-1. **Gradient stability** — headline number: the P95/P50 ratio of grad norm (tail heaviness; the ratio cancels the two runs' different advantage scales). Secondary: spike rate, pre-registered as grad norm > 3× the rolling median of the last 50 updates. R2's spikes should coincide with batches containing $k = 1$ or $G-1$ groups.
-2. **Where the learning goes** — probe once at step 0: sample 8 answers per val prompt with the base model and freeze each prompt's solve rate as its difficulty label — hard (0–20%), mid (20–80%), easy (80–100%). Then plot per-bucket val accuracy. Prediction: R3 gains fastest on the mid bucket; R2 shifts budget to the extremes — easy converges slightly faster (little headroom), hard gets noisier (amplified lone successes are either signal or luck). Mechanism check: the share of total $|\hat{A}|$ mass from near-unanimous groups, R2 > R3.
-3. **Churn** — flip rate of solved prompts (solved at step $t$, unsolved at $t+\Delta$): over-reinforced lucky successes predict higher churn under R2.
+1. **Gradient stability** — the P95/P50 ratio of grad norm (tail heaviness; the ratio cancels the two runs' different advantage scales), plus spike rate (grad norm > 3× the rolling median of the last 50 updates), and whether spikes coincide with batches containing $k = 1$ or $G-1$ groups.
+2. **Where the learning goes** — probe once at step 0: sample 8 answers per val prompt with the base model and freeze each prompt's solve rate as its difficulty label — hard (0–20%), mid (20–80%), easy (80–100%). Then plot val accuracy per bucket, alongside the share of total $|\hat{A}|$ mass contributed by near-unanimous groups.
+3. **Churn** — flip rate of solved prompts: solved at step $t$, unsolved at $t+\Delta$.
 
 If none of these separate, the honest verdict is "unbiased and simpler, at no measurable cost" — also a result.
 
