@@ -73,7 +73,26 @@ Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long fai
 2. **Per-token weight within one batch** — from periodically dumped rollout batches: among wrong rollouts of one step, per-token loss weight vs response length (checks the mechanism is actually present in the loss, not just implied by the formula).
 3. **Truncation share among wrong answers** — fraction of wrong training rollouts hitting the 2,048 cap, per step.
 
-*(to fill: plots + numbers)*
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e11_len">E1.1 — mean training-rollout length by correctness, R1 vs R2 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+| Series | steps 1–20 | steps 153–172 | Δ |
+|---|---|---|---|
+| R1 wrong | 693 | 841 | +148 |
+| R2 wrong | 689 | 787 | +98 |
+| R1 correct | 474 | 500 | +26 |
+| R2 correct | 471 | 503 | +32 |
+
+*(mean tokens, averaged over the first / last 20 steps)*
+
+Findings:
+
+1. **Everything drifts longer.** RL on MATH favors longer reasoning chains regardless of objective — both runs, both correctness classes rise. The evidence is therefore the gap *between* runs, not the absolute slope.
+2. **Wrong answers separate.** From near-identical starts (693 vs 689 — a parity check passed), R1's wrong answers end 53 tokens (~7%) longer than R2's. Direction matches the selection effect: under $1/|o_i|$, long failures are suppressed weakly per token and survive.
+3. **Correct answers don't.** +26 vs +32 is within noise. A global confound (R1 simply generating longer) would move both classes; a gap confined to wrong answers points at the mechanism, which operates exactly there.
+
+One seed, a ~7% gap — suggestive, not conclusive on its own. E1.2 checks the mechanism inside the loss directly.
+
+*(to fill: E1.2, E1.3 plots + numbers)*
 
 ### E2 — what does removing the std division buy?
 
