@@ -114,8 +114,20 @@ Claim: dividing by group std amplifies near-unanimous groups — precisely the l
 
 If none of these separate, the honest verdict is "unbiased and simpler, at no measurable cost" — also a result.
 
-**E2.2, E2.3** — no data: they needed per-prompt validation records, lost to the same pod termination. E2 rests on E2.1 plus the $|\hat{A}|$ mass share, both in wandb.
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e21_grad">E2.1 — actor grad norm per step, R2 vs R3 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
 
-*(to fill: E2.1 plots + numbers)*
+| Run | median | P95 | P95/P50 | spikes (>3× rolling median) |
+|---|---|---|---|---|
+| R2 with /std | 0.177 | 0.213 | 1.20 | 0 / 171 |
+| R3 Dr. GRPO | 0.074 | 0.089 | 1.20 | 0 / 171 |
+
+Findings:
+
+1. **The amplification is real at the scale level.** R2's grad norm runs 2.4× larger throughout — for 0/1 rewards the group std is at most 0.5, so dividing by it at least doubles every advantage. The switch demonstrably reaches the gradients.
+2. **The instability is not.** Tail heaviness is identical (P95/P50 = 1.20 in both), zero spikes in 171 updates each, and the maximum (0.24) never approaches the 1.0 grad clip. The likely reason: each update averages 32 prompts' groups, so one amplified lone-lucky group is diluted ~32-fold before it touches the weights.
+
+This is the pre-registered honest branch, half-taken: the std division rescales gradients but, at this batch size, does not destabilize them.
+
+**E2.2, E2.3** — no data: they needed per-prompt validation records, lost to the same pod termination. One aggregate survives in wandb: the share of $|\hat{A}|$ mass from near-unanimous groups ($k \le 1$ or $k \ge G-1$) averages 0.20 under R2 vs 0.13 under R3 — the /std amplification concentrates update mass on exactly the near-unanimous groups, even though E2.1 shows the batch average absorbs it.
 
 *(Next: mapping each switch onto verl config, then the runs.)*
