@@ -125,9 +125,8 @@ Findings:
 
 1. **The amplification is real at the scale level.** R2's grad norm runs 2.4× larger throughout — for 0/1 rewards the group std is at most 0.5, so dividing by it at least doubles every advantage. The switch demonstrably reaches the gradients.
 2. **The instability is not.** Tail heaviness is identical (P95/P50 = 1.20 in both), zero spikes in 171 updates each, and the maximum (0.24) never approaches the 1.0 grad clip. The likely reason: each update averages 32 prompts' groups, so one amplified lone-lucky group is diluted ~32-fold before it touches the weights.
+3. **The mass concentration is real but absorbed.** Near-unanimous groups ($k \le 1$ or $k \ge G-1$) carry 0.20 of the $|\hat{A}|$ mass under R2 vs 0.13 under R3 — the amplification lands where predicted, and the batch average soaks it up.
 
-This is the pre-registered honest branch, half-taken: the std division rescales gradients but, at this batch size, does not destabilize them.
-
-**E2.2, E2.3** — no data: they needed per-prompt validation records, lost to the same pod termination. One aggregate survives in wandb: the share of $|\hat{A}|$ mass from near-unanimous groups ($k \le 1$ or $k \ge G-1$) averages 0.20 under R2 vs 0.13 under R3 — the /std amplification concentrates update mass on exactly the near-unanimous groups, even though E2.1 shows the batch average absorbs it.
+**E2.2, E2.3** — no data: the per-prompt validation records were lost to the same pod termination.
 
 *(Next: mapping each switch onto verl config, then the runs.)*
