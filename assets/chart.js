@@ -112,6 +112,14 @@ function render(el, metric) {
   const opts = { ...DEFAULTS, ...(metric.options || {}), ...datasetOptions(el) };
   const series = metric.series.slice(0, opts.maxSeries);
 
+  if (opts.endLabels) {
+    // widen the right margin to fit the longest end label (13px, .chart-end-label)
+    const meas = document.createElement("canvas").getContext("2d");
+    meas.font = `13px ${getComputedStyle(el).fontFamily}`;
+    const widest = Math.max(...series.map((s) => meas.measureText(s.label).width));
+    opts.margin = { ...opts.margin, r: Math.max(opts.margin.r, Math.ceil(widest) + 24) };
+  }
+
   const fallback = el.textContent.trim();
   el.textContent = "";
   el.classList.add("chart-ready");
