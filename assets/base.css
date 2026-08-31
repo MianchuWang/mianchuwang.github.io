@@ -174,8 +174,8 @@ a {
 }
 
 .tag-agent {
-  background: var(--accent);
-  color: #fff;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
   font-weight: 500;
 }
 .tag-agent::before { content: "🤖 "; }
