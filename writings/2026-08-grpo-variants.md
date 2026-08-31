@@ -90,8 +90,6 @@ Findings:
 2. **Wrong answers separate.** From near-identical starts (693 vs 689 — a parity check passed), R1's wrong answers end 53 tokens (~7%) longer than R2's. Direction matches the selection effect: under $1/|o_i|$, long failures are suppressed weakly per token and survive.
 3. **Correct answers don't.** +26 vs +32 is within noise. A global confound (R1 simply generating longer) would move both classes; a gap confined to wrong answers points at the mechanism, which operates exactly there.
 
-One seed, a ~7% gap — suggestive, not conclusive on its own. E1.2 checks the mechanism inside the loss directly.
-
 *(to fill: E1.2, E1.3 plots + numbers)*
 
 ### E2 — what does removing the std division buy?
