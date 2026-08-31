@@ -152,7 +152,16 @@ function stageTitle(ctx) {
   if (!ctx.metric.title) return;
   const t = document.createElement("div");
   t.className = "chart-title";
-  t.textContent = ctx.metric.title;
+  const sub = ctx.metric.title.match(/^(E\d+\.\d+)\s*—\s*/); // "E1.1 — …" gets a sub-chip
+  if (sub) {
+    const chip = document.createElement("span");
+    chip.className = "exp-subchip";
+    chip.textContent = sub[1];
+    t.appendChild(chip);
+    t.appendChild(document.createTextNode(ctx.metric.title.slice(sub[0].length)));
+  } else {
+    t.textContent = ctx.metric.title;
+  }
   ctx.el.appendChild(t);
 }
 

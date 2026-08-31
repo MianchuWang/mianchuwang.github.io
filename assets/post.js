@@ -118,6 +118,40 @@ function upgradeExperimentBlocks() {
       section.appendChild(node);
       node = next;
     }
+
+    upgradeSubExperiments(section, m[1]);
+  }
+}
+
+/* Within one experiment card: number the evidence list as E1.1/E1.2/…,
+   and chip those sub-ids where results reference them (chart titles,
+   bold "E1.2"-style markers). */
+function upgradeSubExperiments(section, expId) {
+  const subChip = (id) => {
+    const c = document.createElement("span");
+    c.className = "exp-subchip";
+    c.textContent = id;
+    return c;
+  };
+
+  const evidence = section.querySelector("ol");
+  if (evidence) {
+    evidence.classList.add("exp-evidence");
+    [...evidence.children].forEach((li, k) => li.prepend(subChip(`${expId}.${k + 1}`)));
+  }
+
+  // chart titles get their chips in chart.js (they render async, after this pass)
+
+  for (const b of section.querySelectorAll("strong")) {
+    const ids = b.textContent.trim().match(/^E\d+\.\d+(\s*,\s*E\d+\.\d+)*$/);
+    if (!ids) continue;
+    const frag = document.createDocumentFragment();
+    for (const id of b.textContent.split(",")) frag.appendChild(subChip(id.trim()));
+    const after = b.nextSibling;
+    if (after?.nodeType === Node.TEXT_NODE) {
+      after.textContent = after.textContent.replace(/^\s*—\s*/, "");
+    }
+    b.replaceWith(frag);
   }
 }
 
