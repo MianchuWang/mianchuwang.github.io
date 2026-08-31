@@ -92,7 +92,17 @@ Findings:
 
 **E1.2** — no data: the per-rollout dumps were lost to pod termination.
 
-*(to fill: E1.3 plot)*
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e13_clip">E1.3 — share of wrong rollouts truncated at 2,048 tokens, R1 vs R2 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+| Series | steps 1–20 | steps 153–172 |
+|---|---|---|
+| R1 wrong | 1.0% | 3.9% |
+| R2 wrong | 1.0% | 2.3% |
+
+Findings:
+
+1. **Truncation is a wrong-answer phenomenon.** Correct rollouts almost never hit the cap in either run (peak 0.3%, not plotted) — the cap prunes exactly the population E1 is about.
+2. **The extreme tail grows faster under $1/|o_i|$.** From the same 1% start, R1 ends with ~70% more truncated failures than R2 (3.9% vs 2.3%). The mean-length gap of E1.1 is not a uniform shift — it is driven by long failures surviving and stretching into the cap.
 
 ### E2 — what does removing the std division buy?
 
