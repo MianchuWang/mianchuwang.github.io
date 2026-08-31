@@ -4,11 +4,11 @@
    ============================================================ */
 
 :root {
-  --bg: #faf8f5;          /* warm paper */
+  --bg: #ffffff;          /* match the main site */
   --surface: #ffffff;
   --ink: #24303c;         /* soft black */
   --muted: #5f6b76;
-  --line: #e2ddd4;        /* warm hairline */
+  --line: #e7e5e2;        /* neutral hairline */
   --accent: #2563a8;      /* calm blue */
   --accent-dark: #1d4f88;
   --accent-soft: #eef4fa;
@@ -18,7 +18,7 @@
   --bad: #b3403a;
   --bad-soft: #faf1f0;
   --bad-line: #e8c8c5;
-  --code-bg: #f6f3ee;
+  --code-bg: #f7f6f3;
   --cm-keyword: #708;
   --cm-atom: #219;
   --cm-number: #164;
@@ -502,11 +502,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
 /* ---- dark theme: follows the system; the site toggle (localStorage) wins ---- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-  --bg: #1a1918;
-  --surface: #232120;
+  --bg: #191919;
+  --surface: #202020;
   --ink: #e7e3dc;
   --muted: #a29b90;
-  --line: #3a3732;
+  --line: #343434;
   --accent: #6aa5dd;
   --accent-dark: #8db9e6;
   --accent-soft: #20303f;
@@ -516,7 +516,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
   --bad: #d98079;
   --bad-soft: #301f1d;
   --bad-line: #5c3531;
-  --code-bg: #201e1c;
+  --code-bg: #1e1e1e;
   --cm-keyword: #c586c0;
   --cm-atom: #4fc1ff;
   --cm-number: #b5cea8;
@@ -531,11 +531,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
   :root:not([data-theme="light"]) .badge-medium { color: #d9b55f; border-color: #584a25; background: #2a2417; }
 }
 :root[data-theme="dark"] {
-  --bg: #1a1918;
-  --surface: #232120;
+  --bg: #191919;
+  --surface: #202020;
   --ink: #e7e3dc;
   --muted: #a29b90;
-  --line: #3a3732;
+  --line: #343434;
   --accent: #6aa5dd;
   --accent-dark: #8db9e6;
   --accent-soft: #20303f;
@@ -545,7 +545,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
   --bad: #d98079;
   --bad-soft: #301f1d;
   --bad-line: #5c3531;
-  --code-bg: #201e1c;
+  --code-bg: #1e1e1e;
   --cm-keyword: #c586c0;
   --cm-atom: #4fc1ff;
   --cm-number: #b5cea8;
