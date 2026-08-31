@@ -125,10 +125,11 @@ Findings:
 
 1. **The amplification is real at the scale level.** R2's grad norm runs 2.4× larger throughout — for 0/1 rewards the group std is at most 0.5, so dividing by it at least doubles every advantage. The switch demonstrably reaches the gradients.
 2. **The instability is not.** Tail heaviness is identical (P95/P50 = 1.20 in both), zero spikes in 171 updates each, and the maximum (0.24) never approaches the 1.0 grad clip. The likely reason: each update averages 32 prompts' groups, so one amplified lone-lucky group is diluted ~32-fold before it touches the weights.
-3. **The mass concentration is real but absorbed.** Near-unanimous groups ($k \le 1$ or $k \ge G-1$) carry 0.20 of the $|\hat{A}|$ mass under R2 vs 0.13 under R3 (run means of the curves below) — the amplification lands where predicted, and the batch average soaks it up.
 
-<div class="chart" data-src="writings/figures/w260830.json" data-metric="e21_mass">E2.1 — share of |A| mass from near-unanimous groups, R2 vs R3 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+**E2.2** — half survives: the difficulty buckets needed per-prompt validation records, lost to pod termination; the $|\hat{A}|$ mass share is in wandb. Near-unanimous groups carry 0.20 of the mass under R2 vs 0.13 under R3 (run means) — the amplification lands where predicted, and E2.1 shows the batch average absorbs it.
 
-**E2.2, E2.3** — no data: the per-prompt validation records were lost to the same pod termination.
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e22_mass">E2.2 — share of |A| mass from near-unanimous groups, R2 vs R3 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+**E2.3** — no data: same loss.
 
 *(Next: mapping each switch onto verl config, then the runs.)*
