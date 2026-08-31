@@ -141,4 +141,4 @@ Launch pattern — log to the volume, auto-stop the pod when the run ends *wheth
 
 `runpodctl get pod $RUNPOD_POD_ID` is the harmless auth probe; `runpodctl stop pod` takes effect immediately with no confirmation. Verify launch health within the first minutes: every GPU shows load in `nvidia-smi`, and step timing appears on wandb.
 
-> [!warning] Pod disks are ephemeral — wandb is the source of truth. A terminated pod takes its volume disk with it, including any experiment data written there (learned the hard way: a night of per-rollout dumps died with the pods). Before launching, every file the analysis will need must have a way off the pod: scalars via `wandb.log`, growing files via `wandb.save(path, policy="live")` from step 0, and a final `wandb.Artifact` upload placed *before* the auto-stop in the launch chain. If a record only exists on the pod, treat it as already lost.
+Pod disks are ephemeral — terminating a pod deletes its volume disk. Before launching, give every file the analysis needs a way off the pod: scalars via `wandb.log`, growing files via `wandb.save(path, policy="live")`. A record that only exists on the pod is already lost.
