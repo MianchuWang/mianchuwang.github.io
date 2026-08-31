@@ -90,7 +90,7 @@ Findings:
 2. **Wrong answers separate.** From near-identical starts (693 vs 689 — a parity check passed), R1's wrong answers end 53 tokens (~7%) longer than R2's. Direction matches the selection effect: under $1/|o_i|$, long failures are suppressed weakly per token and survive.
 3. **Correct answers don't.** +26 vs +32 is within noise. A global confound (R1 simply generating longer) would move both classes; a gap confined to wrong answers points at the mechanism, which operates exactly there.
 
-*E1.2 has no data: the per-rollout dumps lived on pod-local disks, and the pods were terminated before collection.*
+**E1.2** — no data: the per-rollout dumps were lost to pod termination.
 
 *(to fill: E1.3 plot)*
 
@@ -104,7 +104,7 @@ Claim: dividing by group std amplifies near-unanimous groups — precisely the l
 
 If none of these separate, the honest verdict is "unbiased and simpler, at no measurable cost" — also a result.
 
-*E2.2's per-bucket curves and E2.3's churn have no data — they needed per-prompt validation records that, like the dumps, died with the terminated pods. E2 rests on E2.1 plus the $|\hat{A}|$ mass share, both in wandb.*
+**E2.2, E2.3** — no data: they needed per-prompt validation records, lost to the same pod termination. E2 rests on E2.1 plus the $|\hat{A}|$ mass share, both in wandb.
 
 *(to fill: E2.1 plots + numbers)*
 
