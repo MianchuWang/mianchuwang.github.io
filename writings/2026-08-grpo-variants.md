@@ -60,7 +60,7 @@ $$
 
 Second round (planned; same data, model and budget):
 
-- **R4** — Dr. GRPO, mini-batch 16 (4 gradient updates per batch instead of 2 — see E3 for why).
+- **R4** — Dr. GRPO, mini-batch 8 (8 gradient updates per batch instead of 2 — see E3 for why).
 - **R5** — R4 + Clip-Higher: $\varepsilon_{\text{high}} = 0.28$, $\varepsilon_{\text{low}} = 0.2$.
 - **R6** — R4 with $\beta = 0$; the reference model stays loaded so KL can still be measured.
 
@@ -147,7 +147,7 @@ Findings:
 
 ### E3 — what does raising $\varepsilon_{high}$ actually change?
 
-Claim: the clip is a per-token gradient cut-off, not a wall — once $\rho > 1+\varepsilon_{high}$ on a positive-advantage token, that token stops contributing to the update, and nothing pulls it back. Raising the ceiling (DAPO's Clip-Higher) moves the cut-off, which can only matter where tokens actually hit it. R1–R3 barely did: with 2 updates per batch, `pg_clipfrac` stayed at ~0.05% and the lower boundary never fired once — so E3 runs both arms at mini-batch 16, giving the boundary four updates of surface area per batch. Evidence to collect:
+Claim: the clip is a per-token gradient cut-off, not a wall — once $\rho > 1+\varepsilon_{high}$ on a positive-advantage token, that token stops contributing to the update, and nothing pulls it back. Raising the ceiling (DAPO's Clip-Higher) moves the cut-off, which can only matter where tokens actually hit it. R1–R3 barely did: with 2 updates per batch, `pg_clipfrac` stayed at ~0.05% and the lower boundary never fired once — so E3 runs both arms at mini-batch 8, giving the boundary eight updates of surface area per batch. Even then the expected effect is small — the ceiling touches ~1% of tokens while sharpening pressure acts on all of them — so what E3 really measures is how the clip's share scales with off-policyness. Evidence to collect:
 
 1. **Clip incidence** — fraction of tokens cut off at the upper boundary (`pg_clipfrac`), R5 vs R4. The lower boundary (same $\varepsilon_{low}$ in both) is the control: it should stay similar.
 2. **Entropy** — mean next-token entropy of the policy over its rollouts: high means probability mass spread across many plausible continuations, low means near-deterministic sampling. This is the cut-off's downstream observable — the claim's causal chain continues: gradients stay alive → exploration tokens' probability rises → mass stays spread → entropy falls slower. R3's entropy collapsed 0.27 → 0.085 *with clip inactive*, so part of the fall is plain sharpening; the gap between R4's and R5's curves measures the part the clip owns.
