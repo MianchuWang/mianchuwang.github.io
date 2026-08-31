@@ -677,3 +677,23 @@ a {
   padding: 1px 7px;
   margin-bottom: 10px;
 }
+
+/* Experiment cards — E1/E2 blocks wrapped by upgradeExperimentBlocks() */
+.exp-block {
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+  padding: 6px 22px 18px;
+  margin: 30px 0;
+}
+.exp-block > h3 { margin-top: 18px; }
+.exp-chip {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 5px;
+  padding: 1px 8px;
+  vertical-align: 2px;
+}

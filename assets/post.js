@@ -64,6 +64,7 @@ async function main() {
   upgradeCallouts(bodyEl);
   initCharts(bodyEl);
   addHeadingAnchors();
+  upgradeExperimentBlocks();
   addCopyButtons();
   buildToc();
 }
@@ -91,6 +92,32 @@ function addHeadingAnchors() {
     a.textContent = "#";
     a.setAttribute("aria-hidden", "true");
     h.prepend(a);
+  }
+}
+
+/* Wrap each "E1 — ..." style h3 section into a bordered card and turn the
+   experiment number into an accent chip, so experiment blocks read as units. */
+function upgradeExperimentBlocks() {
+  for (const h of bodyEl.querySelectorAll("h3")) {
+    const textNode = [...h.childNodes].find((n) => n.nodeType === Node.TEXT_NODE);
+    const m = textNode?.textContent.match(/^(E\d+)\s*—\s*/);
+    if (!m) continue;
+
+    const chip = document.createElement("span");
+    chip.className = "exp-chip";
+    chip.textContent = m[1];
+    textNode.textContent = " " + textNode.textContent.slice(m[0].length);
+    h.insertBefore(chip, textNode);
+
+    const section = document.createElement("section");
+    section.className = "exp-block";
+    h.before(section);
+    let node = h;
+    while (node && !(node !== h && /^H[123]$/.test(node.tagName || ""))) {
+      const next = node.nextElementSibling;
+      section.appendChild(node);
+      node = next;
+    }
   }
 }
 
