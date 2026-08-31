@@ -58,10 +58,18 @@ $$
 - **R2** — R1 minus $1/\vert o_i\vert$: token-level aggregation, std kept.
 - **R3** — R2 minus $/\,\mathrm{std}$: both fixes, i.e. Dr. GRPO.
 
+Second round (planned; same data, model and budget):
+
+- **R4** — Dr. GRPO, mini-batch 16 (4 gradient updates per batch instead of 2 — see E3 for why).
+- **R5** — R4 + Clip-Higher: $\varepsilon_{\text{high}} = 0.28$, $\varepsilon_{\text{low}} = 0.2$.
+- **R6** — R3 with $\beta = 0$; the reference model stays loaded so KL can still be measured.
+
 | Exp | Compares | Isolates |
 |---|---|---|
 | E1 | R1 vs R2 | the $1/\vert o_i\vert$ length bias |
 | E2 | R2 vs R3 | the $/\,\mathrm{std}$ difficulty bias |
+| E3 | R4 vs R5 | the $\varepsilon_{\text{high}}$ gradient cut-off |
+| E4 | R3 vs R6 | the KL anchor |
 
 A higher accuracy curve is not a verdict — it is noisy and confounded. Each experiment must produce direct evidence that its mechanism operated.
 
@@ -137,4 +145,22 @@ Findings:
 
 **E2.3** — no data: same loss.
 
-*(Next: mapping each switch onto verl config, then the runs.)*
+### E3 — what does raising $\varepsilon_{high}$ actually change?
+
+Claim: the clip is a per-token gradient cut-off, not a wall — once $\rho > 1+\varepsilon_{high}$ on a positive-advantage token, that token stops contributing to the update, and nothing pulls it back. Raising the ceiling (DAPO's Clip-Higher) moves the cut-off, which can only matter where tokens actually hit it. R1–R3 barely did: with 2 updates per batch, `pg_clipfrac` stayed at ~0.05% and the lower boundary never fired once — so E3 runs both arms at mini-batch 16, giving the boundary four updates of surface area per batch. Evidence to collect:
+
+1. **Clip incidence** — fraction of tokens cut off at the upper boundary (`pg_clipfrac`), R5 vs R4. The lower boundary (same $\varepsilon_{low}$ in both) is the control: it should stay similar.
+2. **Entropy** — actor entropy over training. R3's entropy collapsed 0.27 → 0.085 *with clip inactive*, so objective sharpening alone kills entropy here; Clip-Higher can only rescue the part the clip is responsible for. Coinciding curves would mean this medicine does not treat this configuration's disease — also a result.
+3. **Where gains land** — validation accuracy split by MATH level (labels ride in `extra_info`). If freed exploration matters, Level 5 should move first. ~300 prompts per level, so noisy; auxiliary to 1–2.
+
+*(to fill: plots + numbers)*
+
+### E4 — what does $\beta = 0$ actually do?
+
+Claim: the KL term anchors the policy to the init model, mainly to stop reward hacking — but the reward here is a rule verifier with little to hack, and in R3 the term's loss contribution measured $0.023 \times 0.001 \approx 2\times10^{-5}$. The anchor is likely decorative; R6 removes it while keeping the reference model loaded, so the divergence is still measured — measurement without regularization. Evidence to collect:
+
+1. **KL to the reference** — R3's curve rose 0.0035 → 0.023 nats/token with no explosion. Does removing the anchor change the slope, or was it decorative all along?
+2. **Learning-curve parity** — accuracy and response lengths, R6 vs R3. Indistinguishable curves are the honest verdict: the anchor was already cosmetic, and dropping the reference model buys pure engineering — no ref forward pass, one less model copy in memory.
+3. **Drift proxies** — non-English-character share and n-gram repetition in rollouts, from dumps (streamed to wandb this time). Expectation: no visible drift at 1.5B × 172 steps — this evidence is a bound, not a discovery.
+
+*(to fill: plots + numbers)*
