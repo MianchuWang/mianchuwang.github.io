@@ -5566,7 +5566,7 @@
    ]
   },
   "e22_mass": {
-   "title": "|A| mass share of near-unanimous groups (k\u22641 or k\u2265G\u22121)",
+   "title": "E2.2 \u2014 |A| mass share of near-unanimous groups (k\u22641 or k\u2265G\u22121)",
    "xLabel": "Step",
    "yLabel": "Share of |A| mass",
    "series": [
