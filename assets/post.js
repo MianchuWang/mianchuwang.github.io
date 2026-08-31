@@ -1,3 +1,16 @@
+/* Article page controller (post.html?p=<slug>).
+
+   Lifecycle: fetch writings/<slug>.md → parseFrontmatter → fill header
+   (title, W-id badge, date, tags) → renderMarkdown into #article-body →
+   enhancement passes, in order:
+     upgradeCallouts   [!info]-style blockquotes → callout boxes   (md.js)
+     initCharts        <div class="chart" data-src/data-metric>    (chart.js)
+     addHeadingAnchors hover # links, unique ids
+     upgradeExperimentBlocks  "E1 —" h3 sections → cards + chips
+     addCopyButtons    on <pre>
+     buildToc          floating contents (h2-h4) with scroll spy
+   Styles live in assets/article.css. */
+
 import {
   parseFrontmatter,
   renderMarkdown,

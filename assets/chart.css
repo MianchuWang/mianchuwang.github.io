@@ -1,0 +1,50 @@
+/* ============================================================================
+   chart.css — interactive charts (assets/chart.js)
+   Styling for the staged SVG chart pipeline: axes, series colors
+   (--chart-s1..4 from base.css tokens), tooltip, legend, data table.
+   ============================================================================ */
+
+.chart { position: relative; margin: 24px 0; font-size: 14px; color: var(--fg-faint); }
+.chart-ready { color: inherit; }
+.chart-title { font-size: 14px; font-weight: 500; color: var(--fg); margin-bottom: 8px; }
+.chart-svg { width: 100%; height: auto; display: block; }
+.chart-grid { stroke: var(--divider); }
+.chart-tick { fill: var(--fg-faint); font-size: 12px; }
+.chart-axis-label { fill: var(--fg-soft); font-size: 12px; }
+.chart-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-dot { stroke: var(--bg); stroke-width: 1.5; }
+.chart-hi { stroke-width: 2; }
+.chart-crosshair { stroke: var(--fg-faint); stroke-dasharray: 3 3; }
+.chart-end-label { fill: var(--fg); font-size: 13px; }
+
+.chart-line.chart-c1 { stroke: var(--chart-s1); }
+.chart-line.chart-c2 { stroke: var(--chart-s2); }
+.chart-line.chart-c3 { stroke: var(--chart-s3); }
+.chart-line.chart-c4 { stroke: var(--chart-s4); }
+.chart-dot.chart-c1, .chart-swatch.chart-c1 { fill: var(--chart-s1); background: var(--chart-s1); }
+.chart-dot.chart-c2, .chart-swatch.chart-c2 { fill: var(--chart-s2); background: var(--chart-s2); }
+.chart-dot.chart-c3, .chart-swatch.chart-c3 { fill: var(--chart-s3); background: var(--chart-s3); }
+.chart-dot.chart-c4, .chart-swatch.chart-c4 { fill: var(--chart-s4); background: var(--chart-s4); }
+
+.chart-tip {
+  position: absolute;
+  background: var(--bg);
+  border: 1px solid var(--divider);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  box-shadow: 0 2px 10px var(--shadow);
+  pointer-events: none;
+  z-index: 2;
+  min-width: 130px;
+}
+.chart-tip-head { color: var(--fg-faint); font-size: 12px; margin-bottom: 4px; }
+.chart-tip-row { display: flex; align-items: center; gap: 7px; }
+.chart-tip-label { color: var(--fg-soft); }
+.chart-tip-val { margin-left: auto; color: var(--fg); font-variant-numeric: tabular-nums; }
+.chart-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.chart-legend { display: flex; gap: 18px; margin-top: 8px; font-size: 13px; color: var(--fg-soft); }
+.chart-legend-item { display: flex; align-items: center; gap: 6px; }
+.chart-data summary { font-size: 12px; color: var(--fg-faint); cursor: pointer; margin-top: 6px; }
+.chart-data-scroll { max-height: 240px; overflow: auto; margin-top: 6px; }
+.chart-data table { font-size: 12px; margin: 0; }

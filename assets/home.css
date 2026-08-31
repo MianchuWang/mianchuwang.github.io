@@ -1,0 +1,166 @@
+/* ============================================================================
+   home.css — homepage (index.html) only
+   Hero, link row, CV columns, and the Publications / Tool Set /
+   Writing lists. assets/home.js renders these client-side and
+   scripts/prerender.py bakes the same markup statically.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------- home -- */
+
+.hero {
+  margin-top: 80px;
+}
+
+.hero h1 {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 24px;
+  line-height: 1.2;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--fg-soft);
+  max-width: 560px;
+}
+
+.hero p a {
+  text-decoration: underline;
+  text-decoration-color: var(--fg-faint);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.1s;
+}
+.hero p a:hover { color: var(--fg); text-decoration-color: var(--fg); }
+
+.hero .links {
+  margin-top: 20px;
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.hero .links a {
+  color: var(--fg-soft);
+  border-bottom: 1px solid var(--divider);
+  padding-bottom: 1px;
+}
+.hero .links a:hover { color: var(--fg); border-color: var(--fg-faint); }
+
+.hero .links span { color: var(--fg-soft); }
+
+.section-title {
+  margin: 56px 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-faint);
+}
+
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post-list a {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  padding: 7px 0;
+}
+
+.post-list .post-title {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.post-list a:hover .post-title { color: var(--accent); }
+
+.post-list .post-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.post-list .post-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.post-list .post-date {
+  flex: none;
+  font-size: 13px;
+  color: var(--fg-faint);
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------- publications -- */
+
+.pub-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pub-list li {
+  padding: 7px 0;
+}
+
+.pub-title {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.pub-title a:hover { color: var(--accent); }
+
+.pub-meta {
+  margin-top: 1px;
+  font-size: 13px;
+  color: var(--fg-faint);
+}
+
+.pub-venue-short {
+  font-weight: 500;
+  color: var(--fg-soft);
+}
+
+/* ---------------------------------------------- experience / education -- */
+
+.hero-cv {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 40px;
+  margin-top: 32px;
+}
+
+@media (max-width: 560px) {
+  .hero-cv { grid-template-columns: 1fr; }
+}
+
+.hero-cv-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-faint);
+  margin-bottom: 8px;
+}
+
+.hero-cv-item {
+  margin-bottom: 10px;
+}
+
+.hero-cv-role {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hero-cv-org {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-faint);
+}

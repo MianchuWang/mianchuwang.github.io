@@ -1,3 +1,7 @@
+/* Homepage renderer (index.html): profile / publications / tools / writing
+   from JSON. scripts/prerender.py bakes IDENTICAL markup between the
+   <!--bake:*--> markers — change one, change the other. Styles: home.css. */
+
 import { formatDate, tagClass, initTheme } from "./md.js";
 
 initTheme();
