@@ -1,6 +1,16 @@
 {
   "posts": [
     {
+      "slug": "2026-09-verl-switch",
+      "title": "verl Internals: The Training–Rollout Switch",
+      "date": "2026-09-01",
+      "lang": "en",
+      "tags": [
+        "verl"
+      ],
+      "summary": "How colocated verl swaps one GPU between FSDP training and vLLM inference — sleep levels, weight sync, and the memory choreography of a single step."
+    },
+    {
       "slug": "2026-08-grpo-variants",
       "title": "GRPO Variants: Empirical Results",
       "date": "2026-08-30",
