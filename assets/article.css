@@ -205,14 +205,14 @@
 .toc {
   position: fixed;
   top: 140px;
-  left: calc(50% + 420px);
-  width: 220px;
+  left: calc(50% - 620px); /* same slot as the homepage INDEX */
+  width: 200px;
   font-size: 13px;
   line-height: 1.5;
   display: none;
 }
 
-@media (min-width: 1250px) {
+@media (min-width: 1280px) {
   .toc.has-items { display: block; }
 }
 
@@ -243,6 +243,9 @@
 .toc a.active { color: var(--fg); border-left-color: var(--fg-soft); }
 .toc a.depth-3 { padding-left: 24px; }
 .toc a.depth-4 { padding-left: 38px; }
+
+/* cloned heading content, scaled for the sidebar */
+.toc .katex { font-size: 0.95em; }
 
 /* Experiment cards — E1/E2 blocks wrapped by upgradeExperimentBlocks() */
 .exp-block {

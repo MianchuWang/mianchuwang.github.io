@@ -216,7 +216,16 @@ function buildToc() {
   for (const h of headings) {
     const a = document.createElement("a");
     a.href = `#${h.id}`;
-    a.textContent = h.textContent.replace(/^#\s*/, "");
+    // clone the rendered heading (KaTeX, chips) instead of textContent —
+    // KaTeX's textContent duplicates every formula (MathML + HTML copies)
+    for (const node of h.childNodes) {
+      if (node.nodeType === 1 && node.classList.contains("anchor")) continue;
+      if (node.nodeType === 1 && node.classList.contains("exp-chip")) {
+        a.appendChild(document.createTextNode(node.textContent)); // plain "E1", no badge (following text node carries the space)
+        continue;
+      }
+      a.appendChild(node.cloneNode(true));
+    }
     a.className = `depth-${h.tagName[1]}`;
     a.addEventListener("click", (e) => {
       // same workaround as the homepage index: Chromium can drop smooth
