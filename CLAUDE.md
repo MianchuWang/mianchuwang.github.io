@@ -45,8 +45,10 @@ Push to `main` = deploy. Verify in the local preview first (port 8644);
 check both light and dark themes for style changes (`.theme-toggle`).
 
 **Never push without an explicit push instruction from the user in the current
-request** — a past "push it" does not carry over to later changes. Committing
-small completed increments locally is fine at Claude's own discretion; pushing
-is the user's call, every time. Don't track or nag about unpushed commits;
+request** — a past "push it" does not carry over to later changes. **Never
+publish a new article the user has not read** — push authorization covers
+reviewed work, not sight-unseen publications. Commit in milestone-sized
+batches (a finished feature, a completed analysis section), not per-edit —
+dozens of micro-commits are noise. Pushing is the user's call, every time. Don't track or nag about unpushed commits;
 only when a substantial piece of work lands — the kind the user would plausibly
 want live — ask once whether to push.

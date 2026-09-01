@@ -217,6 +217,9 @@
 }
 
 .toc .toc-title {
+  display: block;
+  padding: 3px 0 3px 10px;
+  border-left: 2px solid transparent;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -224,6 +227,7 @@
   color: var(--fg-faint);
   margin-bottom: 10px;
 }
+.toc .toc-title:hover { color: var(--fg); }
 
 .toc a {
   display: block;

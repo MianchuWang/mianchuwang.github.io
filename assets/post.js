@@ -188,29 +188,70 @@ function buildToc() {
   if (headings.length < 2) return;
 
   tocEl.classList.add("has-items");
-  tocEl.innerHTML = `<div class="toc-title">Contents</div>`;
+  tocEl.replaceChildren();
   const links = new Map();
+  let lockUntil = 0;
+
+  const setActive = (id) => {
+    links.forEach((a) => a.classList.remove("active"));
+    links.get(id)?.classList.add("active");
+  };
+
+  // "Contents" mirrors the homepage Index: click -> top + clean URL, and
+  // it owns the bar while the page sits above the first heading (key "").
+  const title = document.createElement("a");
+  title.className = "toc-title";
+  title.href = location.pathname + location.search;
+  title.textContent = "Contents";
+  title.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "instant" });
+    history.replaceState(null, "", location.pathname + location.search);
+    setActive("");
+    lockUntil = Date.now() + 500;
+  });
+  tocEl.appendChild(title);
+  links.set("", title);
+
   for (const h of headings) {
     const a = document.createElement("a");
     a.href = `#${h.id}`;
     a.textContent = h.textContent.replace(/^#\s*/, "");
     a.className = `depth-${h.tagName[1]}`;
+    a.addEventListener("click", (e) => {
+      // same workaround as the homepage index: Chromium can drop smooth
+      // fragment scrolls, and a same-hash re-click never scrolls
+      e.preventDefault();
+      h.scrollIntoView({ behavior: "instant", block: "start" });
+      history.replaceState(null, "", `#${h.id}`);
+      setActive(h.id);
+      lockUntil = Date.now() + 500;
+    });
     tocEl.appendChild(a);
     links.set(h.id, a);
   }
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) {
-          links.forEach((a) => a.classList.remove("active"));
-          links.get(e.target.id)?.classList.add("active");
-        }
-      }
-    },
-    { rootMargin: "-10% 0px -80% 0px" }
-  );
-  headings.forEach((h) => observer.observe(h));
+  // Scanline spy (same as the homepage index): an instant jump teleports
+  // headings past an IntersectionObserver band without firing it.
+  let deferred = 0;
+  const onScroll = () => {
+    const now = Date.now();
+    if (now < lockUntil) {
+      clearTimeout(deferred);
+      deferred = setTimeout(onScroll, lockUntil - now + 20);
+      return;
+    }
+    const atBottom = scrollY + innerHeight >= document.documentElement.scrollHeight - 2;
+    if (atBottom) return setActive(headings[headings.length - 1].id);
+    const line = innerHeight * 0.3;
+    let current = ""; // above the first heading: the bar rests on Contents
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= line) current = h.id;
+    }
+    setActive(current);
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 }
 
 main();

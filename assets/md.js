@@ -129,15 +129,26 @@ export function formatDate(iso) {
 
 /* --- theme ---------------------------------------------------------------- */
 
+/* localStorage can throw (blocked site data, some private modes). */
+function storage(op, ...args) {
+  try { return localStorage[op](...args); } catch { return null; }
+}
+
 export function initTheme() {
-  const saved = localStorage.getItem("theme");
+  const saved = storage("getItem", "theme");
   if (saved) document.documentElement.dataset.theme = saved;
   const btn = document.querySelector(".theme-toggle");
   if (!btn) return;
+  const isSwitch = !!btn.querySelector(".theme-knob"); // knob styling is pure CSS
   const icon = () => {
     const t =
       document.documentElement.dataset.theme ||
       (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    if (isSwitch) {
+      btn.setAttribute("role", "switch");
+      btn.setAttribute("aria-checked", String(t === "dark"));
+      return;
+    }
     btn.textContent = t === "dark" ? "☀" : "☾";
   };
   icon();
@@ -147,7 +158,7 @@ export function initTheme() {
       (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
     const next = current === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
-    localStorage.setItem("theme", next);
+    storage("setItem", "theme", next);
     icon();
   });
 }

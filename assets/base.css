@@ -121,6 +121,13 @@ a {
 }
 
 .site-nav .nav-right a:hover { color: var(--fg); }
+.site-nav .brand,
+.site-nav .nav-right a { white-space: nowrap; }
+
+@media (max-width: 430px) {
+  .site-nav { font-size: 13px; }
+  .site-nav .nav-right { gap: 12px; }
+}
 
 /* small highlight badge anchored to a nav item's bottom-right */
 .site-nav .nav-badged {
@@ -143,16 +150,44 @@ a {
   pointer-events: none;
 }
 
+/* Day/night switch: a pill whose knob slides and swaps sun/moon with the
+   active theme. Position is pure CSS off the same three theme conditions
+   as the tokens; initTheme() only flips data-theme. */
 .theme-toggle {
-  background: none;
-  border: none;
-  padding: 2px;
+  background: var(--callout-bg);
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  width: 46px;
+  height: 24px;
+  padding: 0;
+  position: relative;
   cursor: pointer;
-  color: var(--fg-soft);
-  font-size: 15px;
-  line-height: 1;
+  flex: none;
 }
-.theme-toggle:hover { color: var(--fg); }
+.theme-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;              /* explicit: must stand out on both tracks */
+  color: #55524c;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: left 0.15s ease;
+  font-size: 11px;
+  line-height: 17px;
+  text-align: center;
+}
+.theme-knob::before { content: "☀"; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle { background: #454545; }
+  :root:not([data-theme="light"]) .theme-knob { left: 24px; }
+  :root:not([data-theme="light"]) .theme-knob::before { content: "☾"; }
+}
+:root[data-theme="dark"] .theme-toggle { background: #454545; }
+:root[data-theme="dark"] .theme-knob { left: 24px; }
+:root[data-theme="dark"] .theme-knob::before { content: "☾"; }
 
 /* ------------------------------------------------- tags & id badges -- */
 

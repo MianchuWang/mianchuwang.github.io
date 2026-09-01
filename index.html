@@ -10,8 +10,10 @@
   <link rel="stylesheet" href="assets/home.css" />
   <script>
     // Apply saved theme before first paint to avoid flashing.
-    const t = localStorage.getItem("theme");
-    if (t) document.documentElement.dataset.theme = t;
+    try {
+      const t = localStorage.getItem("theme");
+      if (t) document.documentElement.dataset.theme = t;
+    } catch (e) {}
   </script>
 </head>
 <body>
@@ -19,11 +21,20 @@
     <nav class="site-nav">
       <a class="brand" href="./">Mianchu Wang</a>
       <div class="nav-right">
-        <a href="#publications">Publications</a>
-        <a href="#tool-set">Tool Set</a>
-        <a href="#writing">Writing</a>
-        <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">☾</button>
+        <div class="nav-links">
+          <a href="#publications">Publications</a>
+          <a href="#tool-set">Tool Set</a>
+          <a href="#writing">Writing</a>
+        </div>
+        <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme"><span class="theme-knob"></span></button>
       </div>
+    </nav>
+
+    <nav class="home-toc" aria-label="Sections">
+      <a class="toc-title" href="./">Index</a>
+      <a href="#publications">Publications</a>
+      <a href="#tool-set">Tool Set</a>
+      <a href="#writing">Writing</a>
     </nav>
 
     <header class="hero">

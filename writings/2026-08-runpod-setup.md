@@ -136,8 +136,15 @@ tmux attach -t train   # reconnect after any disconnect
 Launch pattern — log to the volume, auto-stop the pod when the run ends *whether it succeeds or crashes* (`;`, not `&&`):
 
 ```bash
-<run-command> 2>&1 | tee /workspace/train.log; runpodctl stop pod $RUNPOD_POD_ID
+<run-command> 2>&1 | tee /workspace/train.log; sleep 60; runpodctl stop pod <literal-pod-id>
 ```
+
+Write the **literal pod id** into the chain — do not reference
+`$RUNPOD_POD_ID` there. The variable exists only in shells that sourced
+`setup.sh`; a tmux command shell has not, so the reference expands empty and
+the stop fails silently while the pod idles at full price (this exact bug
+cost one overnight run ~5 idle GPU-hours). The `sleep 60` lets wandb finish
+its final flush before the pod dies.
 
 `runpodctl get pod $RUNPOD_POD_ID` is the harmless auth probe; `runpodctl stop pod` takes effect immediately with no confirmation. Verify launch health within the first minutes: every GPU shows load in `nvidia-smi`, and step timing appears on wandb.
 
