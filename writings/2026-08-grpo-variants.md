@@ -153,7 +153,25 @@ Claim: the clip is a per-token gradient cut-off, not a wall — once $\rho > 1+\
 2. **Entropy** — mean next-token entropy of the policy over its rollouts: high means probability mass spread across many plausible continuations, low means near-deterministic sampling. This is the cut-off's downstream observable — the claim's causal chain continues: gradients stay alive → exploration tokens' probability rises → mass stays spread → entropy falls slower. R3's entropy collapsed 0.27 → 0.085 *with clip inactive*, so part of the fall is plain sharpening; the gap between R4's and R5's curves measures the part the clip owns.
 3. **Where gains land** — validation accuracy split by MATH level (labels ride in `extra_info`). If freed exploration matters, Level 5 should move first. ~300 prompts per level, so noisy; auxiliary to 1–2.
 
-*(to fill: plots + numbers)*
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e31_upper">E3.1 — share of tokens cut off at the upper clip boundary, R3 vs R4 vs R5 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e31_lower">E3.1 control — lower-boundary clip share, same three runs — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+Findings:
+
+1. **Off-policyness sets the base rate.** More updates per batch means more clipping, with a climb over training: sharpening drifts ratios further each step, crowding the ceiling.
+2. **Ceiling height beats off-policy pressure.** Raising $\varepsilon_{high}$ cuts incidence below even the near-on-policy R3 and flattens the climb.
+3. **The purchase is signal, not stability.** A clipped token is silenced, not destabilizing — the clip *is* the stabilizer. What R5 recovers are precisely the fastest-rising tokens, the ones carrying exploration.
+4. **The lower boundary shows the same ordering, two orders of magnitude down.** As updates stack within a batch, ratios drift off 1 in both directions. R5 drifting less downward than R4 may be due to slower sharpening (see E3.2).
+
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e32_entropy">E3.2 — actor entropy over training, R3 vs R4 vs R5 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+Findings:
+
+1. **A higher ceiling preserves exploration.** R4's entropy collapses even harder than near-on-policy R3; raising $\varepsilon_{high}$ holds R5's entropy at roughly three times R4's endpoint.
+2. **Why 0.1% of tokens clipped can move entropy this much.** The clipped tokens are exactly the low-probability, rising ones — the distribution's only spreading force. Silencing them each step redirects growth toward already-likely tokens, and over 172 steps × 8 updates the compounding diverges the two policies.
+
+*(to fill: E3.3)*
 
 ### E4 — what does $\beta = 0$ actually do?
 
