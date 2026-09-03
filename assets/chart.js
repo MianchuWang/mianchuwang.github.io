@@ -35,7 +35,7 @@ const DEFAULTS = {
   width: 860,           // viewBox size (rendered responsively)
   height: 400,
   margin: { t: 14, r: 96, b: 42, l: 58 },
-  maxSeries: 4,         // palette slots available
+  maxSeries: 6,         // series cap; palette has 4 slots, series.c reuses them
   markers: "auto",      // "auto" (only when sparse) | true | false
   markersMax: 40,       // "auto" threshold: dots only if points <= this
   yTicks: 5,
@@ -111,6 +111,7 @@ function datasetOptions(el) {
 function render(el, metric) {
   const opts = { ...DEFAULTS, ...(metric.options || {}), ...datasetOptions(el) };
   const series = metric.series.slice(0, opts.maxSeries);
+  series.forEach((sr, i) => (sr._c = sr.c ?? (i % 4) + 1)); // palette slot per series
 
   if (opts.endLabels) {
     // widen the right margin to fit the longest end label (13px, .chart-end-label)
@@ -196,12 +197,13 @@ function stageSeries(ctx) {
   const { series, opts, svg, px, py } = ctx;
   series.forEach((s, i) => {
     const d = s.points.map(([x, y], j) => `${j ? "L" : "M"}${px(x).toFixed(1)},${py(y).toFixed(1)}`).join("");
-    svgEl("path", { d, class: `chart-line chart-c${i + 1}` }, svg);
+    const line = svgEl("path", { d, class: `chart-line chart-c${s._c}` }, svg);
+    if (s.dash) line.setAttribute("stroke-dasharray", "7 5");
     const dots = opts.markers === true ||
       (opts.markers === "auto" && s.points.length <= opts.markersMax);
     if (dots) {
       for (const [x, y] of s.points) {
-        svgEl("circle", { cx: px(x), cy: py(y), r: 3, class: `chart-dot chart-c${i + 1}` }, svg);
+        svgEl("circle", { cx: px(x), cy: py(y), r: 3, class: `chart-dot chart-c${s._c}` }, svg);
       }
     }
   });
@@ -212,13 +214,13 @@ function stageEndLabels(ctx) {
   if (!opts.endLabels) return;
   const { width: W, margin: M } = opts;
   const ends = series
-    .map((s, i) => ({ label: s.label, i, y: py(s.points[s.points.length - 1][1]) }))
+    .map((s, i) => ({ label: s.label, i, c: s._c, y: py(s.points[s.points.length - 1][1]) }))
     .sort((a, b) => a.y - b.y);
   for (let k = 1; k < ends.length; k++) {
     if (ends[k].y - ends[k - 1].y < 16) ends[k].y = ends[k - 1].y + 16;
   }
   for (const e of ends) {
-    svgEl("circle", { cx: W - M.r + 8, cy: e.y - 4, r: 4, class: `chart-dot chart-c${e.i + 1}` }, svg);
+    svgEl("circle", { cx: W - M.r + 8, cy: e.y - 4, r: 4, class: `chart-dot chart-c${e.c}` }, svg);
     svgEl("text", { x: W - M.r + 16, y: e.y, class: "chart-end-label" }, svg).textContent = e.label;
   }
 }
@@ -229,8 +231,8 @@ function stageHover(ctx) {
   const { width: W, height: H, margin: M } = opts;
 
   const cross = svgEl("line", { y1: M.t, y2: H - M.b, class: "chart-crosshair", visibility: "hidden" }, svg);
-  const hiDots = series.map((_, i) =>
-    svgEl("circle", { r: 4.5, class: `chart-dot chart-hi chart-c${i + 1}`, visibility: "hidden" }, svg));
+  const hiDots = series.map((s, i) =>
+    svgEl("circle", { r: 4.5, class: `chart-dot chart-hi chart-c${s._c}`, visibility: "hidden" }, svg));
   const tip = document.createElement("div");
   tip.className = "chart-tip";
   tip.hidden = true;
@@ -258,7 +260,7 @@ function stageHover(ctx) {
     tip.innerHTML =
       `<div class="chart-tip-head">${metric.xLabel || "x"} ${fmt(hits[0][0])}</div>` +
       series.map((s, i) =>
-        `<div class="chart-tip-row"><span class="chart-swatch chart-c${i + 1}"></span>` +
+        `<div class="chart-tip-row"><span class="chart-swatch chart-c${series[i]._c}"></span>` +
         `<span class="chart-tip-label">${s.label}</span><span class="chart-tip-val">${fmt(hits[i][1])}</span></div>`
       ).join("");
     tip.hidden = false;
@@ -283,7 +285,7 @@ function stageLegend(ctx) {
   const legend = document.createElement("div");
   legend.className = "chart-legend";
   legend.innerHTML = series.map((s, i) =>
-    `<span class="chart-legend-item"><span class="chart-swatch chart-c${i + 1}"></span>${s.label}</span>`
+    `<span class="chart-legend-item"><span class="chart-swatch chart-c${s._c}"></span>${s.label}</span>`
   ).join("");
   el.appendChild(legend);
 }

@@ -50,15 +50,15 @@ $$
 
 ## Ablations
 
-**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), 64 prompts × $G = 12$ rollouts per step, max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need. A large $G$ sharpens everything at once: fewer all-wrong zero-gradient groups, more lone-success events, finer $k$ resolution. All three runs share identical config and seed; only the listed switches differ.
+**Setup.** Qwen2.5-1.5B-Instruct on MATH (levels 3–5), 64 prompts × $G = 12$ rollouts per step, max response 2,048 tokens — hard enough that accuracy stays mid-range, so groups keep mixing correct and wrong rollouts: the raw material both biases need. A large $G$ keeps groups mixed and resolves $k$ finely. Within a round, runs share config and seed; only the listed switches differ.
 
-**Variants.** Three training runs (R = run), each one switch apart:
+**Variants.** Training runs (R = run), each one switch apart. First round:
 
 - **R1** — GRPO, unmodified.
 - **R2** — R1 minus $1/\vert o_i\vert$: token-level aggregation, std kept.
 - **R3** — R2 minus $/\,\mathrm{std}$: both fixes, i.e. Dr. GRPO.
 
-Second round (planned; same data, model and budget):
+Second round (same data, model and budget):
 
 - **R4** — Dr. GRPO, mini-batch 8 (8 gradient updates per batch instead of 2 — see E3 for why).
 - **R5** — R4 + Clip-Higher: $\varepsilon_{\text{high}} = 0.28$, $\varepsilon_{\text{low}} = 0.2$.
@@ -71,14 +71,14 @@ Second round (planned; same data, model and budget):
 | E3 | R4 vs R5 | the $\varepsilon_{\text{high}}$ gradient cut-off |
 | E4 | R4 vs R6 | the KL anchor |
 
-A higher accuracy curve is not a verdict — it is noisy and confounded. Each experiment must produce direct evidence that its mechanism operated.
+Accuracy curves are noisy and confounded; each experiment must show its mechanism directly.
 
 ### E1 — what does $1/|o_i|$ actually do?
 
 Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long failures are punished gently and survive. Evidence to collect:
 
 1. **Length by correctness over training** — mean length of training rollouts at each step, split by reward into wrong / correct.
-2. **Per-token weight within one batch** — from periodically dumped rollout batches: among wrong rollouts of one step, per-token loss weight vs response length (checks the mechanism is actually present in the loss, not just implied by the formula).
+2. **Per-token weight within one batch** — from periodically dumped rollout batches: among wrong rollouts of one step, per-token loss weight vs response length.
 3. **Truncation share among wrong answers** — fraction of wrong training rollouts hitting the 2,048 cap, per step.
 
 <div class="chart" data-src="writings/figures/w260830.json" data-metric="e11_len">E1.1 — mean training-rollout length by correctness, R1 vs R2 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
@@ -94,9 +94,9 @@ Claim: per-token suppression of a wrong rollout scales as $1/|o_i|$, so long fai
 
 Findings:
 
-1. **Everything drifts longer.** RL on MATH favors longer reasoning chains regardless of objective — both runs, both correctness classes rise. The evidence is therefore the gap *between* runs, not the absolute slope.
-2. **Wrong answers separate.** From near-identical starts (693 vs 689 — a parity check passed), R1's wrong answers end 53 tokens (~7%) longer than R2's. Direction matches the selection effect: under $1/|o_i|$, long failures are suppressed weakly per token and survive.
-3. **Correct answers don't.** +26 vs +32 is within noise. A global confound (R1 simply generating longer) would move both classes; a gap confined to wrong answers points at the mechanism, which operates exactly there.
+1. **Everything drifts longer.** Both runs, both classes rise — RL on MATH favors longer chains. The evidence is the gap *between* runs, not the slope.
+2. **Wrong answers separate.** From identical starts, R1's wrong answers end longer — the selection effect: under $1/|o_i|$, long failures are suppressed weakly per token and survive.
+3. **Correct answers don't.** A global confound would move both classes; a gap confined to wrong answers points at the mechanism.
 
 **E1.2** — no data: the per-rollout dumps were lost to pod termination.
 
@@ -109,18 +109,18 @@ Findings:
 
 Findings:
 
-1. **Truncation is a wrong-answer phenomenon.** Correct rollouts almost never hit the cap in either run (peak 0.3%, not plotted) — the cap prunes exactly the population E1 is about.
-2. **The extreme tail grows faster under $1/|o_i|$.** From the same 1% start, R1 ends with ~70% more truncated failures than R2 (3.9% vs 2.3%). The mean-length gap of E1.1 is not a uniform shift — it is driven by long failures surviving and stretching into the cap.
+1. **Truncation is a wrong-answer phenomenon.** Correct rollouts almost never hit the cap (not plotted).
+2. **The extreme tail grows faster under $1/|o_i|$.** The mean-length gap of E1.1 is not a uniform shift — it is long failures surviving and stretching into the cap.
 
 ### E2 — what does removing the std division buy?
 
-Claim: dividing by group std amplifies near-unanimous groups — precisely the least learnable prompts — and turns a lone lucky success into an outsized update. Removing it should buy stability and better-allocated learning, not just an unbiased estimator. Writing $k$ for the number of correct rollouts in a group (0…$G$), evidence to collect:
+Claim: dividing by group std amplifies near-unanimous groups — precisely the least learnable prompts — and turns a lone lucky success into an outsized update. ~~Removing it should buy stability and better-allocated learning, not just an unbiased estimator.~~ *Wrong on stability — E2.1 finds none to buy; allocation went untested.* Writing $k$ for the number of correct rollouts in a group (0…$G$), evidence to collect:
 
-1. **Gradient stability** — the P95/P50 ratio of grad norm (tail heaviness; the ratio cancels the two runs' different advantage scales), plus spike rate (grad norm > 3× the rolling median of the last 50 updates), and whether spikes coincide with batches containing $k = 1$ or $G-1$ groups.
-2. **Where the learning goes** — probe once at step 0: sample 8 answers per val prompt with the base model and freeze each prompt's solve rate as its difficulty label — hard (0–20%), mid (20–80%), easy (80–100%). Then plot val accuracy per bucket, alongside the share of total $|\hat{A}|$ mass contributed by near-unanimous groups:
+1. **Gradient stability** — the P95/P50 ratio of grad norm (tail heaviness; the ratio cancels the two runs' different advantage scales), plus spike rate (grad norm > 3× the rolling median of the last 50 updates).
+2. **Where the learning goes** — val accuracy per difficulty bucket (base-model solve rate at step 0: hard / mid / easy), alongside the share of $|\hat{A}|$ mass from near-unanimous groups:
    $$\text{mass share} = \frac{\sum_{i \,\in\, \text{near-unanimous}} |\hat{A}_i|}{\sum_{i \,\in\, \text{batch}} |\hat{A}_i|}, \qquad \text{near-unanimous:}\; k \le 1 \text{ or } k \ge G-1,$$
-   one $\hat{A}_i$ per rollout (a batch is $64 \times G = 768$). All-wrong and all-correct groups have $\hat{A} \equiv 0$, so the share effectively measures lone-success and lone-failure groups — where $/\,\mathrm{std}$ amplifies most (at $k=1$, std $\approx 0.28$, a $3.5\times$ boost).
-3. **Churn** — fraction of val prompts whose greedy answer flips from correct to wrong between consecutive validations. A prompt propped up by one amplified lucky trajectory has no redundant support — later, conflicting gradients from other prompts erode it; a prompt solved by consistent signal stays solved.
+   one $\hat{A}_i$ per rollout. All-wrong and all-correct groups have $\hat{A} \equiv 0$, so the share effectively measures lone-success and lone-failure groups — where $/\,\mathrm{std}$ amplifies most (at $k=1$, std $\approx 0.28$, a $3.5\times$ boost).
+3. **Churn** — fraction of val prompts whose greedy answer flips from correct to wrong between consecutive validations. A prompt propped up by one amplified lucky trajectory has no redundant support and erodes; consistent signal stays solved.
 
 If none of these separate, the honest verdict is "unbiased and simpler, at no measurable cost" — also a result.
 
@@ -133,25 +133,25 @@ If none of these separate, the honest verdict is "unbiased and simpler, at no me
 
 Findings:
 
-1. **The amplification is real at the scale level.** R2's grad norm runs 2.4× larger throughout — for 0/1 rewards the group std is at most 0.5, so dividing by it at least doubles every advantage. The switch demonstrably reaches the gradients.
-2. **The instability is not.** Tail heaviness is identical (P95/P50 = 1.20 in both), zero spikes in 171 updates each, and the maximum (0.24) never approaches the 1.0 grad clip. The likely reason: each update averages 32 prompts' groups, so one amplified lone-lucky group is diluted ~32-fold before it touches the weights.
+1. **The amplification is real at the scale level.** For 0/1 rewards the group std is at most 0.5, so dividing by it at least doubles every advantage, hence R2's larger grad norm.
+2. **The instability is not.** Tail heaviness and spike count are identical. Each update averages 32 groups, so one amplified lone-lucky group is diluted before it touches the weights.
 
 <div class="chart" data-src="writings/figures/w260830.json" data-metric="e22_mass">E2.2 — share of |A| mass from near-unanimous groups, R2 vs R3 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
 
 Findings:
 
-1. **The mass concentration is real but absorbed.** Near-unanimous groups carry 0.20 of the $|\hat{A}|$ mass under R2 vs 0.13 under R3 (run means) — the amplification lands where predicted, and E2.1 shows the batch average absorbs it.
+1. **The mass concentration is real but absorbed.** The amplification lands on the near-unanimous groups as predicted; E2.1 shows the batch average absorbs it.
 2. **The difficulty-bucket half has no data** — it needed the per-prompt validation records that died with the pods.
 
 **E2.3** — no data: same loss.
 
 ### E3 — what does raising $\varepsilon_{high}$ actually change?
 
-Claim: the clip is a per-token gradient cut-off, not a wall — once $\rho > 1+\varepsilon_{high}$ on a positive-advantage token, that token stops contributing to the update, and nothing pulls it back. Raising the ceiling (DAPO's Clip-Higher) moves the cut-off, which can only matter where tokens actually hit it. R1–R3 barely did: with 2 updates per batch, `pg_clipfrac` stayed at ~0.05% and the lower boundary never fired once — so E3 runs both arms at mini-batch 8, giving the boundary eight updates of surface area per batch. Even then the expected effect is small — the ceiling touches ~1% of tokens while sharpening pressure acts on all of them — so what E3 really measures is how the clip's share scales with off-policyness. Evidence to collect:
+Claim: the clip is a per-token gradient cut-off, not a wall — once $\rho > 1+\varepsilon_{high}$ on a positive-advantage token, that token stops contributing to the update, and nothing pulls it back. Raising the ceiling (DAPO's Clip-Higher) moves the cut-off, which can only matter where tokens actually hit it. R1–R3 barely did: with 2 updates per batch, `pg_clipfrac` stayed at ~0.05% and the lower boundary never fired once — so E3 runs both arms at mini-batch 8. ~~Even then the expected effect is small — the ceiling touches ~1% of tokens while sharpening pressure acts on all of them.~~ *Wrong — 0.1% of tokens moved entropy threefold (E3.2).* What E3 really measures is how the clip's share scales with off-policyness. Evidence to collect:
 
-1. **Clip incidence** — fraction of tokens cut off at the upper boundary (`pg_clipfrac`), R5 vs R4. The lower boundary (same $\varepsilon_{low}$ in both) is the control: it should stay similar.
-2. **Entropy** — mean next-token entropy of the policy over its rollouts: high means probability mass spread across many plausible continuations, low means near-deterministic sampling. This is the cut-off's downstream observable — the claim's causal chain continues: gradients stay alive → exploration tokens' probability rises → mass stays spread → entropy falls slower. R3's entropy collapsed 0.27 → 0.085 *with clip inactive*, so part of the fall is plain sharpening; the gap between R4's and R5's curves measures the part the clip owns.
-3. **Where gains land** — validation accuracy split by MATH level (labels ride in `extra_info`). If freed exploration matters, Level 5 should move first. ~300 prompts per level, so noisy; auxiliary to 1–2.
+1. **Clip incidence** — fraction of tokens cut off at the upper boundary (`pg_clipfrac`), R5 vs R4. The lower boundary (same $\varepsilon_{low}$ in both) is the control: ~~it should stay similar~~ *— it did not; see finding 4*.
+2. **Entropy** — mean next-token entropy of the policy: high means mass spread across many continuations, low means near-deterministic sampling. The cut-off's downstream observable: gradients stay alive → rare tokens rise → entropy falls slower. R3's collapsed *with clip inactive*, so part of the fall is plain sharpening; the R4–R5 gap measures the clip's part.
+3. **Where gains land** — validation accuracy split by MATH level. ~~If freed exploration matters, Level 5 should move first.~~ *Wrong — the only separation appeared on Level 3.* Noisy; auxiliary to 1–2.
 
 <div class="chart" data-src="writings/figures/w260830.json" data-metric="e31_upper">E3.1 — share of tokens cut off at the upper clip boundary, R3 vs R4 vs R5 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
 
@@ -168,17 +168,50 @@ Findings:
 
 Findings:
 
-1. **A higher ceiling preserves exploration.** R4's entropy collapses even harder than near-on-policy R3; raising $\varepsilon_{high}$ holds R5's entropy at roughly three times R4's endpoint.
+1. **A higher ceiling preserves exploration.** Raising $\varepsilon_{high}$ holds R5's entropy far above R4's. Entropy is the precondition for exploration, not its by-product: once it collapses, sampling can no longer reach rare tokens, so there is nothing left to explore. Clip-Higher is thus defensive — it keeps sharpening from strangling exploration rather than adding any. But a preserved capacity is a necessary, not sufficient, condition for better answers — which E3.3 does not find here.
 2. **Why 0.1% of tokens clipped can move entropy this much.** The clipped tokens are exactly the low-probability, rising ones — the distribution's only spreading force. Silencing them each step redirects growth toward already-likely tokens, and over 172 steps × 8 updates the compounding diverges the two policies.
 
-*(to fill: E3.3)*
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e33_levels">E3.3 — validation accuracy by MATH level, R4 (solid) vs R5 (dashed) — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+Findings:
+
+1. **End to end, the two are close.** L4 and L5 stay tangled throughout — at this scale Clip-Higher's clear mechanistic effect (E3.1, E3.2) does not cash out as accuracy.
+2. **The one separation is on L3.** After ~150 steps R5 keeps climbing while R4 turns down; the rising trend is the sturdier half.
+
+The experiments do not show a clear difference between R4 and R5; a larger-scale run may differ.
 
 ### E4 — what does $\beta = 0$ actually do?
 
-Claim: the KL term anchors the policy to the init model, mainly to stop reward hacking — but the reward here is a rule verifier with little to hack, and in R3 the term's loss contribution measured $0.023 \times 0.001 \approx 2\times10^{-5}$. The anchor is likely decorative; R6 removes it while keeping the reference model loaded, so the divergence is still measured — measurement without regularization. Evidence to collect:
+Claim: the KL term anchors the policy to the init model, mainly to stop reward hacking — but the reward here is a rule verifier with little to hack, and in R3 the term's loss contribution measured $0.023 \times 0.001 \approx 2\times10^{-5}$. ~~The anchor is likely decorative;~~ *Half wrong — it measurably curbs drift (E4.1), with no performance consequence (E4.2).* R6 removes it while keeping the reference model loaded, so the divergence is still measured — measurement without regularization. Evidence to collect:
 
-1. **KL to the reference** — R3's curve rose 0.0035 → 0.023 nats/token with no explosion. Does removing the anchor change the slope, or was it decorative all along?
-2. **Learning-curve parity** — accuracy and response lengths, R6 vs R4. Indistinguishable curves are the honest verdict: the anchor was already cosmetic, and dropping the reference model buys pure engineering — no ref forward pass, one less model copy in memory.
-3. **Drift proxies** — non-English-character share and n-gram repetition in rollouts, from dumps (streamed to wandb this time). Expectation: no visible drift at 1.5B × 172 steps — this evidence is a bound, not a discovery.
+1. **KL to the reference** — R3's curve rose steadily with no explosion; does removing the anchor change the slope?
+2. **Learning-curve parity** — accuracy and response lengths, R6 vs R4. Indistinguishable curves would mean the anchor was cosmetic and the reference model pure cost.
+3. **Drift proxies** — non-English-character share and n-gram repetition in validation outputs. Expected: no visible drift at this scale — a bound, not a discovery.
 
-*(to fill: plots + numbers)*
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e41_kl">E4.1 — KL to the reference model, R4 (β = 0.001) vs R6 (β = 0) — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+Finding: even at $\beta = 0.001$ the anchor measurably curbs drift — R6 without it diverges from the reference a little faster and further.
+
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e42_acc">E4.2 — overall validation accuracy, R4 vs R6 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e42_len">Mean response length, same comparison — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+Finding: accuracy and length curves are indistinguishable — R4 runs a touch higher early on and the two meet by the last step; with the anchor's loss contribution at $\sim 10^{-5}$, that gap is perturbation, not mechanism. Removing the anchor costs nothing measurable and returns the reference model's cost.
+
+<div class="chart" data-src="writings/figures/w260830.json" data-metric="e43_rep">E4.3 — 4-gram repetition in validation outputs, R4 vs R6 — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
+
+Finding: no drift attributable to $\beta$. Non-English characters stay at 0% throughout. The 4-gram repetition climbs steeply in *both* runs together — it is degenerate looping on hard problems, not an anchor effect. The worst R6 outputs simply repeat until the length cap:
+
+> `\cos(2x - (x + (y + z) - x)) = \cos(2x - (x + (y + z) - x)) = \cos(2x - (x + (y + z) - x)) = …`
+
+> `So, 11 is divisible by 11. We can divide by 11 again: [1 ÷ 11 = 0] So, 11 is divisible by 11. We can divide by 11 again: …`
+
+R4 loops the same way; removing the anchor adds no degeneration.
+
+## Summary
+
+1. **Every switch shows up in the mechanism metrics; none shows up in accuracy** at this scale. Whether a fix pays depends on the regime.
+2. **$1/|o_i|$**: long failures survive because their per-token punishment is diluted (E1).
+3. **$/\,\mathrm{std}$**: the amplification is real, and batch averaging absorbs it (E2).
+4. **Clip-Higher**: only matters under off-policy pressure; there it keeps entropy alive — a precondition for exploration, not a guarantee of better answers (E3).
+5. **$\beta = 0.001$**: still curbs drift, still changes nothing else; drop it and get the reference model's cost back (E4).

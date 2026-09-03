@@ -193,12 +193,12 @@ a {
 
 .tag {
   display: inline-block;
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: 11px; /* match the W/T id chips */
+  line-height: 1.7;
   color: var(--fg-soft);
   background: var(--callout-bg);
   border-radius: 4px;
-  padding: 0 8px;
+  padding: 0 6px;
   white-space: nowrap;
 }
 
