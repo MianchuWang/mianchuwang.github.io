@@ -55,7 +55,8 @@ def main() -> None:
             posts.append(p)  # entries carry "url" instead of "slug"
 
     for p in posts:
-        p["tags"] = sorted(p.get("tags", []), key=str.lower)
+        # alphabetical, except status tags ("In Progress") always go last
+        p["tags"] = sorted(p.get("tags", []), key=lambda t: (t.lower() == "in progress", t.lower()))
 
     posts.sort(key=lambda p: p["date"], reverse=True)
     out = CONTENT / "manifest.json"

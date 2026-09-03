@@ -111,7 +111,7 @@ def posts_html(posts):
     for p in posts:
         lang = f' lang="{p["lang"]}"' if p.get("lang") and p["lang"] != "en" else ""
         wid = f'<span class="tool-id">W{p["date"].replace("-", "")[2:]}</span>' if p.get("date") else ""
-        special = {"wandb": " tag-wandb", "agent runbook": " tag-agent"}  # mirror tagClass() in md.js
+        special = {"wandb": " tag-wandb", "agent runbook": " tag-agent", "in progress": " tag-progress"}  # mirror tagClass() in md.js
         tags = "".join(
             f'<span class="tag{special.get(t.lower(), "")}">{t}</span>'
             for t in p.get("tags", [])
@@ -136,12 +136,12 @@ def sections_html(pubs, tools, posts):
     if pubs:
         out.append('<h2 class="section-title" id="publications">Publications</h2>')
         out.append(publications_html(pubs))
-    if tools:
-        out.append('<h2 class="section-title" id="tool-set">Tool Set</h2>')
-        out.append(tools_html(tools))
     if posts:
         out.append('<h2 class="section-title" id="writing">Writing</h2>')
         out.append(posts_html(posts))
+    if tools:
+        out.append('<h2 class="section-title" id="tool-set">Tool Set</h2>')
+        out.append(tools_html(tools))
     return "\n    ".join(out)
 
 

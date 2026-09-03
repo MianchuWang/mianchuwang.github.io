@@ -162,15 +162,6 @@ async function main() {
     frag.appendChild(renderPublications(pubs));
   }
 
-  if (tools.length > 0) {
-    const h2 = document.createElement("h2");
-    h2.className = "section-title";
-    h2.id = "tool-set";
-    h2.textContent = "Tool Set";
-    frag.appendChild(h2);
-    frag.appendChild(renderTools(tools));
-  }
-
   if (posts.length > 0) {
     const h2 = document.createElement("h2");
     h2.className = "section-title";
@@ -178,6 +169,15 @@ async function main() {
     h2.textContent = "Writing";
     frag.appendChild(h2);
     frag.appendChild(renderList(posts));
+  }
+
+  if (tools.length > 0) {
+    const h2 = document.createElement("h2");
+    h2.className = "section-title";
+    h2.id = "tool-set";
+    h2.textContent = "Tool Set";
+    frag.appendChild(h2);
+    frag.appendChild(renderTools(tools));
   }
 
   listEl.replaceChildren(frag);

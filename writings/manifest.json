@@ -1,6 +1,18 @@
 {
   "posts": [
     {
+      "slug": "2026-09-entropy-collapse",
+      "title": "The Collapse of Entropy",
+      "date": "2026-09-03",
+      "lang": "en",
+      "tags": [
+        "Entropy",
+        "GRPO",
+        "In Progress"
+      ],
+      "summary": "One disease behind several GRPO fixes — what entropy collapse is, why it caps exploration, and what our own runs already show."
+    },
+    {
       "slug": "2026-08-grpo-variants",
       "title": "GRPO Variants: Empirical Results",
       "date": "2026-08-30",

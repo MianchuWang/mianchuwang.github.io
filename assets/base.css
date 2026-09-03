@@ -215,6 +215,12 @@ a {
 }
 .tag-agent::before { content: "🤖 "; }
 
+.tag-progress {
+  background: color-mix(in srgb, var(--chart-s2) 14%, transparent);
+  color: var(--chart-s2);
+  font-weight: 500;
+}
+
 /* Page id badge shown top-left above article/tool titles (W<yymmdd> / T<yymmdd>). */
 .page-id {
   display: inline-block;
@@ -239,14 +245,21 @@ a {
 
 /* --------------------------------------------------------- footer -- */
 
+/* Two quiet left-aligned lines: copyright, then the disclaimer a notch
+   smaller — no side-by-side columns fighting over width. */
 .site-footer {
   margin-top: 96px;
   padding-top: 24px;
   border-top: 1px solid var(--divider);
   font-size: 13px;
   color: var(--fg-faint);
-  display: flex;
-  justify-content: space-between;
+  line-height: 1.6;
+}
+.site-footer span { display: block; }
+.site-footer span + span {
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.85;
 }
 
 .back-link {

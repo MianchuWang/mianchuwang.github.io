@@ -109,7 +109,7 @@ export function renderMarkdown(body) {
 }
 
 /* Tags with a dedicated chip style (matched case-insensitively). */
-const SPECIAL_TAGS = { "wandb": "tag-wandb", "agent runbook": "tag-agent" };
+const SPECIAL_TAGS = { "wandb": "tag-wandb", "agent runbook": "tag-agent", "in progress": "tag-progress" };
 
 export function tagClass(tag) {
   const extra = SPECIAL_TAGS[tag.toLowerCase()];

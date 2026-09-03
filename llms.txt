@@ -4,6 +4,7 @@
 
 ## Writing
 
+- [The Collapse of Entropy](https://mianchuwang.github.io/writings/2026-09-entropy-collapse.md): One disease behind several GRPO fixes — what entropy collapse is, why it caps exploration, and what our own runs already show. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-09-entropy-collapse)
 - [GRPO Variants: Empirical Results](https://mianchuwang.github.io/writings/2026-08-grpo-variants.md): Three critic-free RL objectives, one pipeline — what each changes in the token-weighting math, and what actually differs in training. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-08-grpo-variants)
 - [Fine-tuning Qwen2.5-1.5B-Instruct on GSM8K with Single/Double A40 GPUs](https://mianchuwang.github.io/writings/2026-08-grpo-a40-scaling.md): A 1-vs-2 GPU GRPO comparison — where the speedup went, phase by phase. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-08-grpo-a40-scaling)
 - [Setting Up RunPod for verl](https://mianchuwang.github.io/writings/2026-08-runpod-setup.md): An agent-executable runbook for setting up verl on a fresh RunPod pod. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-08-runpod-setup)
