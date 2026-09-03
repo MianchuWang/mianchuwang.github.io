@@ -2,29 +2,29 @@
 title: "The Collapse of Entropy"
 date: 2026-09-03
 tags: [Entropy, GRPO, "In Progress"]
-summary: One disease behind several GRPO fixes — what entropy collapse is, why it caps exploration, and what our own runs already show.
+summary: One problem behind several GRPO fixes — what entropy collapse is, why it limits exploration, and what our own runs already show.
 ---
 
 ## The problem
 
-### What collapses
+At each position $t$ of a rollout, the policy's next-token entropy is
 
-Entropy here is the policy's mean next-token entropy over its own rollouts: high means probability mass spread across many plausible continuations, low means near-deterministic sampling. Under RL with verifiable rewards it falls fast — in our runs ([W260830](post.html?p=2026-08-grpo-variants), E3.2) from 0.27 to 0.085 in 172 steps, and faster still with more updates per batch:
+$$
+H_t = -\sum_{v \in \mathcal{V}} \pi_\theta(v \mid x, o_{<t}) \,\log \pi_\theta(v \mid x, o_{<t}),
+$$
+
+where $x$ is the prompt, $o_{<t}$ the tokens generated so far, $v$ ranges over every candidate in the vocabulary $\mathcal{V}$, and $\pi_\theta$ is the current policy. The entropy we track is the average of $H_t$ over all tokens the policy generates in one training step. High entropy means the probability is spread over many possible next tokens. Low entropy means the policy almost always picks the same token.
+
+Under RL with verifiable rewards, entropy drops quickly. In our runs ([W260830](post.html?p=2026-08-grpo-variants), E3.2) it fell from 0.27 to 0.085 over 172 steps (R3; means of the first and last 20 steps):
 
 <div class="chart" data-src="writings/figures/w260830.json" data-metric="e32_entropy">Actor entropy over training for three Dr. GRPO runs — interactive figure; raw data: <a href="writings/figures/w260830.json">w260830.json</a></div>
 
-Some of that fall is the point. Learning *is* sharpening: a policy that has found the right steps should sample them more often. The problem is not that entropy falls but that it falls past the floor where exploration dies, and faster than learning justifies. So the question is quantitative: **how much of each step's entropy loss is learning, and how much is collateral?**
+Part of this drop is expected. Learning means the policy becomes more certain: once it finds the right steps, it should choose them more often. The problem is not that entropy drops. The problem is that it drops below the level where exploration is still possible, and faster than learning requires. So the question is a quantitative one: **in each step, how much of the entropy loss is learning, and how much is a side effect?**
 
-### Why it matters
+Three results from those runs (Qwen2.5-1.5B, MATH levels 3–5):
 
-RL does not invent, it selects: every update reweights tokens the policy already samples. Entropy is therefore the precondition for exploration, not its by-product — once it collapses, rare tokens stop being sampled, so nothing new can ever be reinforced. The group signal starves at the same time: unanimous groups have $\hat{A} \equiv 0$, and the share of unanimous groups rises as the policy sharpens. A collapsed policy is not wrong, it is finished.
+- **More off-policy updates make the collapse worse** — eight updates per batch (R4) collapses further than two (R3).
+- **A gradient-side fix slows it down** — raising the clip ceiling (R5) keeps entropy at three times R4's final value, because the rare tokens that are rising keep their gradients.
+- **Keeping entropy did not improve accuracy** — R5 and R4 reached the same accuracy. Entropy is necessary for exploration, but not sufficient for better answers.
 
-### What we have already seen
-
-Three shapes from W260830, all on Qwen2.5-1.5B / MATH L3–5:
-
-- **Off-policy pressure accelerates collapse** — eight updates per batch (R4) collapses harder than two (R3).
-- **A gradient-side fix holds it** — raising the clip ceiling (R5) keeps entropy at three times R4's endpoint, by keeping the rare rising tokens' gradients alive.
-- **Preserved entropy did not pay** — R5's accuracy matched R4's. Necessary, not sufficient: this scale never got to spend the capacity it kept.
-
-That last point sets the bar for what follows. Preserving entropy is cheap; the real question is which interventions preserve the *right* entropy — spread that a larger regime can turn into answers — and how to tell them apart at a scale where accuracy cannot.
+The last point sets the standard for the rest of this article. Keeping entropy high is easy. The real question is which methods keep the *useful* kind of entropy — the kind a larger model or a longer run can turn into better answers — and how to tell them apart when accuracy alone cannot.
