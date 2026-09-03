@@ -8,7 +8,7 @@
 /* ----------------------------------------------------------------- home -- */
 
 .hero {
-  margin-top: 80px;
+  margin-top: 48px;
 }
 
 .hero h1 {
@@ -164,6 +164,9 @@
   line-height: 1.45;
   color: var(--fg-faint);
 }
+
+/* homepage nav has no brand (the hero h1 carries the name) */
+.site-nav-home { justify-content: flex-end; }
 
 /* ------------------------------------------------- left section index -- */
 /* Wide screens: sections listed as a fixed left index (mirrors the
