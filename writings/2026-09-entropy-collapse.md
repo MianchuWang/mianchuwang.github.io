@@ -5,7 +5,7 @@ tags: [Entropy, GRPO, "In Progress"]
 summary: One problem behind several GRPO fixes — what entropy collapse is, why it limits exploration, and what our own runs already show.
 ---
 
-## The problem
+## Problem
 
 At each position $t$ of a rollout, the policy's next-token entropy is
 
@@ -28,3 +28,23 @@ Three results from those runs (Qwen2.5-1.5B, MATH levels 3–5):
 - **Keeping entropy did not improve accuracy** — R5 and R4 reached the same accuracy. Entropy is necessary for exploration, but not sufficient for better answers.
 
 The last point sets the standard for the rest of this article. Keeping entropy high is easy. The real question is which methods keep the *useful* kind of entropy — the kind a larger model or a longer run can turn into better answers — and how to tell them apart when accuracy alone cannot.
+
+## Identification
+
+*(to fill)*
+
+## Accounting
+
+*(to fill)*
+
+## Treatments
+
+*(to fill)*
+
+## Comparison
+
+*(to fill)*
+
+## Summary
+
+*(to fill)*

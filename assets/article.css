@@ -205,47 +205,72 @@
 
 /* ------------------------------------------------------------------ toc -- */
 
+/* Table of contents. Narrow screens: a bordered card under the title at
+   body size. Wide screens (>=1280px): the same element becomes the fixed
+   left slot at sidebar size. */
 .toc {
-  position: fixed;
-  top: 140px;
-  left: calc(50% - 620px); /* same slot as the homepage INDEX */
-  width: 200px;
-  font-size: 13px;
-  line-height: 1.5;
   display: none;
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 28px 0 0;
 }
-
-@media (min-width: 1280px) {
-  .toc.has-items { display: block; }
-}
+.toc.has-items { display: block; }
 
 .toc .toc-title {
   display: block;
   padding: 3px 0 3px 10px;
   border-left: 2px solid transparent;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--fg-faint);
-  margin-bottom: 10px;
+  color: var(--fg-soft);
+  margin-bottom: 8px;
 }
 .toc .toc-title:hover { color: var(--fg); }
 
 .toc a {
   display: block;
   color: var(--fg-faint);
-  padding: 3px 0;
+  padding: 3px 0 3px 10px;
   border-left: 2px solid transparent;
-  padding-left: 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .toc a:hover { color: var(--fg); }
 .toc a.active { color: var(--fg); border-left-color: var(--fg-soft); }
-.toc a.depth-3 { padding-left: 24px; }
-.toc a.depth-4 { padding-left: 38px; }
+.toc a.depth-3 { padding-left: calc(10px + 2em); }   /* ~4 characters per level */
+.toc a.depth-4 { padding-left: calc(10px + 4em); }
+
+@media (min-width: 1280px) {
+  .toc {
+    position: fixed;
+    top: 140px;
+    left: calc(50% - 620px); /* same slot as the homepage INDEX */
+    width: 200px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .toc .toc-title {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    padding: 3px 0 3px 10px;
+    border-left: 2px solid transparent;
+    margin-bottom: 10px;
+  }
+  .toc a {
+    color: var(--fg-faint);
+    padding: 3px 0 3px 10px;
+    border-left: 2px solid transparent;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .toc a.active { color: var(--fg); border-left-color: var(--fg-soft); }
+  .toc a.depth-3 { padding-left: 24px; }
+  .toc a.depth-4 { padding-left: 38px; }
+}
 
 /* cloned heading content, scaled for the sidebar */
 .toc .katex { font-size: 0.95em; }
