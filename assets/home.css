@@ -188,6 +188,7 @@
 }
 .home-toc .toc-title {
   display: block;
+  width: fit-content;
   padding: 3px 0 3px 10px;
   border-left: 2px solid transparent;
   font-size: 13px;
@@ -200,6 +201,7 @@
 .home-toc .toc-title:hover { color: var(--fg); }
 .home-toc a {
   display: block;
+  width: fit-content;      /* hit area = the text, not the whole row */
   color: var(--fg-faint);
   padding: 3px 0 3px 10px;
   border-left: 2px solid transparent;

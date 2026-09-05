@@ -218,6 +218,7 @@
 
 .toc .toc-title {
   display: block;
+  width: fit-content;
   padding: 3px 0 3px 10px;
   border-left: 2px solid transparent;
   font-size: 13px;
@@ -231,6 +232,8 @@
 
 .toc a {
   display: block;
+  width: fit-content;      /* hit area = the text, not the whole row */
+  max-width: 100%;
   color: var(--fg-faint);
   padding: 3px 0 3px 10px;
   border-left: 2px solid transparent;
@@ -311,3 +314,78 @@
 }
 .exp-evidence { list-style: none; padding-left: 0; }
 .exp-evidence > li { margin-bottom: 10px; }
+
+/* ------------------------------------------------- canvas mode (ink) -- */
+/* assets/canvas.js: a viewport-sized overlay for pen notes, red only. */
+.canvas-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  color: var(--fg-soft);
+  cursor: pointer;
+}
+.canvas-toggle:hover { color: var(--fg); border-color: var(--fg-faint); }
+.canvas-toggle[aria-pressed="true"] {
+  color: #e0433a;
+  border-color: #e0433a;
+  background: color-mix(in srgb, #e0433a 10%, transparent);
+}
+
+.ink-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;   /* the document listens; fingers keep scrolling */
+  z-index: 50;
+  display: none;
+}
+.ink-on .ink-canvas { display: block; }
+.ink-on { user-select: none; -webkit-user-select: none; }
+.ink-on body { cursor: crosshair; }
+
+.ink-bar {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg);
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px var(--shadow);
+}
+.ink-on .ink-bar { display: flex; }
+.ink-bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--fg-soft);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ink-bar button:hover { color: var(--fg); background: var(--callout-bg); }
+.ink-bar button.active {
+  color: #e0433a;
+  background: color-mix(in srgb, #e0433a 14%, transparent);
+}
+.ink-sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 3px;
+  background: var(--divider);
+}

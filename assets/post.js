@@ -20,8 +20,10 @@ import {
   initTheme,
 } from "./md.js";
 import { initCharts } from "./chart.js";
+import { initCanvasMode } from "./canvas.js";
 
 initTheme();
+initCanvasMode();
 
 // "Back" as real history navigation when we came from this site, so the
 // homepage restores its scroll position; plain link otherwise.
