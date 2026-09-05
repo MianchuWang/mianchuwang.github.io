@@ -175,19 +175,31 @@ a {
   color: #55524c;
   border: 1px solid rgba(0, 0, 0, 0.12);
   transition: left 0.15s ease;
-  font-size: 11px;
-  line-height: 17px;
-  text-align: center;
 }
-.theme-knob::before { content: "☀"; }
+/* Sun / moon as SVG masks, not text glyphs: "☀" turns into the yellow
+   emoji on iOS while staying a plain glyph on desktop. A mask paints
+   the icon in currentColor, identical everywhere. */
+.theme-knob::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: currentColor;
+  -webkit-mask: var(--knob-icon) center / contain no-repeat;
+  mask: var(--knob-icon) center / contain no-repeat;
+}
+:root {
+  --knob-sun: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Cpath d='M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6'/%3E%3C/svg%3E");
+  --knob-moon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linejoin='round'%3E%3Cpath d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'/%3E%3C/svg%3E");
+  --knob-icon: var(--knob-sun);
+}
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --knob-icon: var(--knob-moon); }
   :root:not([data-theme="light"]) .theme-toggle { background: #454545; }
   :root:not([data-theme="light"]) .theme-knob { left: 24px; }
-  :root:not([data-theme="light"]) .theme-knob::before { content: "☾"; }
 }
+:root[data-theme="dark"] { --knob-icon: var(--knob-moon); }
 :root[data-theme="dark"] .theme-toggle { background: #454545; }
 :root[data-theme="dark"] .theme-knob { left: 24px; }
-:root[data-theme="dark"] .theme-knob::before { content: "☾"; }
 
 /* ------------------------------------------------- tags & id badges -- */
 

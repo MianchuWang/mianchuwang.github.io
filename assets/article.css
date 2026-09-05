@@ -321,7 +321,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  width: 46px;             /* same pill as the theme switch beside it */
   height: 24px;
   padding: 0;
   background: none;
@@ -330,6 +330,7 @@
   color: var(--fg-soft);
   cursor: pointer;
 }
+.canvas-toggle svg { width: 16px; height: 16px; }
 .canvas-toggle:hover { color: var(--fg); border-color: var(--fg-faint); }
 .canvas-toggle[aria-pressed="true"] {
   color: #e0433a;
