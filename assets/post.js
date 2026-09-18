@@ -73,7 +73,7 @@ async function main() {
   const tags = (meta.tags || [])
     .map?.((t) => `<span class="${tagClass(t)}">${t}</span>`)
     .join("") || "";
-  metaEl.innerHTML = `<span>${formatDate(meta.date)}</span>${tags}`;
+  metaEl.innerHTML = `<span>Created on ${formatDate(meta.date)}</span>${tags}`;
 
   bodyEl.innerHTML = renderMarkdown(body);
   upgradeCallouts(bodyEl);

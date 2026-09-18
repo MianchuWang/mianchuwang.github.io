@@ -21,8 +21,14 @@ no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
 
 ## Conventions
 
+- Article pages show `Created on <formatted date>` beneath the title via
+  `assets/post.js`; for example, `Created on Sep 18, 2026`.
+- `draft: true` excludes an article from the homepage index. Articles being
+  written in the homepage list use the `"In Progress"` tag instead.
+
 - Article frontmatter: `title`, `date`, `tags`, `summary`.
-  - `date` is the **creation date — never bump it on edits**.
+  - `date` is the **creation date — never bump it on ordinary edits**.
+    Correct it when explicitly requested by the user.
   - `summary` is one short sentence; it feeds `llms.txt` (the homepage list
     shows tags instead).
 - **After changing frontmatter or any `profile/*.json`, run
@@ -39,6 +45,11 @@ no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
   `date` automatically (nothing to set). Tags are auto-sorted alphabetically
   by `build_manifest.py`.
 
+## Local preview
+
+Run `python3 scripts/dev_server.py 8644 .` and open `http://localhost:8644`.
+Reuse the running server when available. See `README.md` for the full workflow.
+
 ## Publishing
 
 Push to `main` = deploy. Verify in the local preview first (port 8644);
@@ -52,3 +63,29 @@ batches (a finished feature, a completed analysis section), not per-edit —
 dozens of micro-commits are noise. Pushing is the user's call, every time. Don't track or nag about unpushed commits;
 only when a substantial piece of work lands — the kind the user would plausibly
 want live — ask once whether to push.
+
+## Working with Mianchu
+
+- Discuss the work in Chinese; existing articles are written in English.
+- Learn and write collaboratively, one step at a time. Do not fill an entire
+  article or add unrequested sections ahead of the discussion.
+- Keep durable project decisions here; keep article content in `writings/`.
+  Update these notes when decisions change rather than appending a session log.
+
+## Current verl article
+
+- File: `writings/2026-09-verl-switch.md`.
+- Title: `Inside verl: How RL Training Works`.
+- Created: `2026-09-18`; article ID: `W260918`.
+- Listed in Writing with `verl` and `In Progress` tags.
+- The user requested a fresh start. The previous training/rollout-switch
+  article recovered from Git history was deliberately cleared. Do not restore
+  or reuse that text unless requested; develop the new article step by step.
+- The filename is retained for URL continuity and does not constrain the new
+  article's scope. Verify technical claims against the source version used
+  in the new discussion.
+
+## Maintaining these instructions
+
+`AGENTS.md` is the single source of project instructions. Keep shared rules
+and durable collaboration notes in this file.

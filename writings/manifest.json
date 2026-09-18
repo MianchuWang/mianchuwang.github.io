@@ -1,6 +1,17 @@
 {
   "posts": [
     {
+      "slug": "2026-09-verl-switch",
+      "title": "Inside verl: How RL Training Works",
+      "date": "2026-09-18",
+      "lang": "en",
+      "tags": [
+        "verl",
+        "In Progress"
+      ],
+      "summary": "Notes on learning verl from scratch."
+    },
+    {
       "slug": "2026-09-entropy-collapse",
       "title": "The Collapse of Entropy",
       "date": "2026-09-03",
