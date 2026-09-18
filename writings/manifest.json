@@ -2,14 +2,15 @@
   "posts": [
     {
       "slug": "2026-09-verl-switch",
-      "title": "Inside verl: How RL Training Works",
+      "title": "The System Design of verl: GRPO as an Example",
       "date": "2026-09-18",
       "lang": "en",
       "tags": [
+        "system design",
         "verl",
         "In Progress"
       ],
-      "summary": "Notes on learning verl from scratch."
+      "summary": "Exploring how verl coordinates data, computation, and GPU resources across generation and training."
     },
     {
       "slug": "2026-09-entropy-collapse",

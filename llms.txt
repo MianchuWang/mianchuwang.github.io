@@ -4,7 +4,7 @@
 
 ## Writing
 
-- [Inside verl: How RL Training Works](https://mianchuwang.github.io/writings/2026-09-verl-switch.md): Notes on learning verl from scratch. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-09-verl-switch)
+- [The System Design of verl: GRPO as an Example](https://mianchuwang.github.io/writings/2026-09-verl-switch.md): Exploring how verl coordinates data, computation, and GPU resources across generation and training. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-09-verl-switch)
 - [The Collapse of Entropy](https://mianchuwang.github.io/writings/2026-09-entropy-collapse.md): One problem behind several GRPO fixes — what entropy collapse is, why it limits exploration, and what our own runs already show. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-09-entropy-collapse)
 - [GRPO Variants: Empirical Results](https://mianchuwang.github.io/writings/2026-08-grpo-variants.md): Three critic-free RL objectives in one pipeline — what each one changes in the per-token weighting, and what actually differs in training. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-08-grpo-variants)
 - [Fine-tuning Qwen2.5-1.5B-Instruct on GSM8K with Single/Double A40 GPUs](https://mianchuwang.github.io/writings/2026-08-grpo-a40-scaling.md): A 1-vs-2 GPU GRPO comparison — where the speedup went, phase by phase. (raw markdown; human version at https://mianchuwang.github.io/post.html?p=2026-08-grpo-a40-scaling)

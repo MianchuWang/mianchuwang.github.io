@@ -69,15 +69,22 @@ want live — ask once whether to push.
 - Discuss the work in Chinese; existing articles are written in English.
 - Learn and write collaboratively, one step at a time. Do not fill an entire
   article or add unrequested sections ahead of the discussion.
+- Use direct, clear, concise academic prose in articles. Prefer precise terms,
+  short sentences, and logically ordered explanations. Define abbreviations
+  on first use; avoid filler, repeated framing, and unnecessary jargon.
 - Keep durable project decisions here; keep article content in `writings/`.
   Update these notes when decisions change rather than appending a session log.
 
 ## Current verl article
 
 - File: `writings/2026-09-verl-switch.md`.
-- Title: `Inside verl: How RL Training Works`.
+- Title: `The System Design of verl: GRPO as an Example`.
 - Created: `2026-09-18`; article ID: `W260918`.
-- Listed in Writing with `verl` and `In Progress` tags.
+- Listed in Writing with `system design`, `verl`, and `In Progress` tags.
+- Focus on system design: orchestration, component responsibilities and
+  interfaces, data and weight movement, GPU memory, and communication costs.
+  Use GRPO as a concrete workload; explain RL concepts only as needed to
+  understand the system, without making algorithm derivations the main topic.
 - The user requested a fresh start. The previous training/rollout-switch
   article recovered from Git history was deliberately cleared. Do not restore
   or reuse that text unless requested; develop the new article step by step.
