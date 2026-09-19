@@ -5,7 +5,7 @@ no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
 
 ## Layout
 
-- `index.html` + `assets/home.js` — homepage; sections (Publications, Tool Set,
+- `index.html` + `assets/home.js` — homepage; sections (Publications, Toolbox,
   Writing) render from JSON: `profile/*.json` and `writings/manifest.json`.
 - `assets/` CSS is layered: `base.css` (theme tokens, nav, footer, badges —
   every page) + one page layer (`home.css` / `article.css`, charts add

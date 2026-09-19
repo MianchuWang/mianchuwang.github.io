@@ -225,7 +225,7 @@ a {
   margin-bottom: 10px;
 }
 
-/* Tool Set entries carry a short id (T<yymmdd>, creation date) for reference. */
+/* Toolbox entries carry a short id (T<yymmdd>, creation date) for reference. */
 .tool-id {
   font-family: var(--font-mono);
   font-size: 11px;

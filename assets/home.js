@@ -6,7 +6,7 @@ import { formatDate, tagClass, articleId, initTheme, createScrollSpy } from "./s
 
 initTheme();
 
-const sectionsEl = document.getElementById("sections"); // Publications / Writing / Tool Set
+const sectionsEl = document.getElementById("sections"); // Publications / Writing / Toolbox
 
 /* <ul class=className> with one <li> per item; itemHtml(item) is its markup.
    The *Html functions below are the ones prerender.py mirrors. */
@@ -158,7 +158,7 @@ async function main() {
   };
   if (pubs.length > 0) addSection("publications", "Publications", renderList("pub-list", pubs, publicationHtml));
   if (posts.length > 0) addSection("writing", "Writing", renderList("post-list", posts, postHtml));
-  if (tools.length > 0) addSection("tool-set", "Tool Set", renderList("pub-list", tools, toolHtml));
+  if (tools.length > 0) addSection("toolbox", "Toolbox", renderList("pub-list", tools, toolHtml));
 
   sectionsEl.replaceChildren(frag);
 }

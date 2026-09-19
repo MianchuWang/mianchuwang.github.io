@@ -144,7 +144,7 @@ def sections_html(pubs, tools, posts):
         out.append('<h2 class="section-title" id="writing">Writing</h2>')
         out.append(posts_html(posts))
     if tools:
-        out.append('<h2 class="section-title" id="tool-set">Tool Set</h2>')
+        out.append('<h2 class="section-title" id="toolbox">Toolbox</h2>')
         out.append(tools_html(tools))
     return "\n    ".join(out)
 

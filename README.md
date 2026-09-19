@@ -64,7 +64,7 @@ llms.txt           ← generated agent-readable site index
 profile/           ← homepage content (JSON)
   profile.json         name, bio, links, education & experience (home hero)
   publications.json    publication list
-  tools.json           "Tool Set" section
+  tools.json           "Toolbox" section
 writings/          ← posts (Markdown + frontmatter)
   manifest.json        generated post index — never edit by hand
   external.json        externally-hosted posts (entries carry a url)
@@ -87,7 +87,7 @@ scripts/
 
 Drop a self-contained static app into `tools/<name>/` and add an entry to
 `profile/tools.json` (`id`, `title`, `description`, `url`). It appears in the
-home page's **Tool Set** section. The `id` is `T<yymmdd>` from the tool's
+home page's **Toolbox** section. The `id` is `T<yymmdd>` from the tool's
 creation date — e.g. `T260816` — shown on the home page and in the tool's own
 header, so tools can be referred to by number.
 
