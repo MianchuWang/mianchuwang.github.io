@@ -105,7 +105,8 @@ class DevHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def log_message(self, fmt, *args):
-        if "/__version" not in (args[0] if args else ""):
+        # args[0] is the request line, or an int status code from send_error
+        if "/__version" not in str(args[0] if args else ""):
             super().log_message(fmt, *args)
 
 
