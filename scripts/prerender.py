@@ -22,6 +22,10 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 INDEX = ROOT / "index.html"
+SITE = "https://mianchuwang.github.io"
+
+# mirrors SPECIAL_TAGS / tagClass() in assets/site.js
+SPECIAL_TAGS = {"wandb": " tag-wandb", "agent runbook": " tag-agent", "in progress": " tag-progress"}
 
 
 def load(rel):
@@ -30,7 +34,7 @@ def load(rel):
 
 
 def format_date(iso):
-    """Mirror formatDate in assets/md.js: en-US 'Aug 28, 2026'."""
+    """Mirror formatDate in assets/site.js: en-US 'Aug 28, 2026'."""
     try:
         d = datetime.date.fromisoformat(iso)
     except (TypeError, ValueError):
@@ -38,7 +42,7 @@ def format_date(iso):
     return f"{d.strftime('%b')} {d.day}, {d.year}"
 
 
-# --- builders mirror the render* functions in assets/home.js ----------------
+# --- builders mirror the *Html / render* functions in assets/home.js --------
 
 def bio_html(profile):
     return profile.get("bio", "")
@@ -110,10 +114,10 @@ def posts_html(posts):
     lis = []
     for p in posts:
         lang = f' lang="{p["lang"]}"' if p.get("lang") and p["lang"] != "en" else ""
+        # W<yymmdd>, mirrors articleId() in assets/site.js
         wid = f'<span class="tool-id">W{p["date"].replace("-", "")[2:]}</span>' if p.get("date") else ""
-        special = {"wandb": " tag-wandb", "agent runbook": " tag-agent", "in progress": " tag-progress"}  # mirror tagClass() in md.js
         tags = "".join(
-            f'<span class="tag{special.get(t.lower(), "")}">{t}</span>'
+            f'<span class="tag{SPECIAL_TAGS.get(t.lower(), "")}">{t}</span>'
             for t in p.get("tags", [])
         )
         tags = f'<span class="post-tags">{wid}{tags}</span>'
@@ -150,9 +154,6 @@ def bake(html, name, content):
     if not pattern.search(html):
         sys.exit(f"marker bake:{name} not found in index.html")
     return pattern.sub(lambda m: m.group(1) + content + m.group(2), html)
-
-
-SITE = "https://mianchuwang.github.io"
 
 
 def llms_txt(profile, pubs, tools, posts):

@@ -8,17 +8,11 @@
      addHeadingAnchors hover # links, unique ids
      upgradeExperimentBlocks  "E1 —" h3 sections → cards + chips
      addCopyButtons    on <pre>
-     buildToc          floating contents (h2-h4) with scroll spy
+     buildToc          floating contents (h2-h4) with scroll spy   (site.js)
    Styles live in assets/article.css. */
 
-import {
-  parseFrontmatter,
-  renderMarkdown,
-  upgradeCallouts,
-  formatDate,
-  tagClass,
-  initTheme,
-} from "./md.js";
+import { parseFrontmatter, renderMarkdown, upgradeCallouts } from "./md.js";
+import { formatDate, tagClass, articleId, initTheme, createScrollSpy } from "./site.js";
 import { initCharts } from "./chart.js";
 
 initTheme();
@@ -32,26 +26,28 @@ document.querySelector(".back-link")?.addEventListener("click", (e) => {
   }
 });
 
-const params = new URLSearchParams(location.search);
-const slug = params.get("p");
+const slug = new URLSearchParams(location.search).get("p");
 
 const titleEl = document.getElementById("article-title");
 const metaEl = document.getElementById("article-meta");
 const bodyEl = document.getElementById("article-body");
 const tocEl = document.getElementById("toc");
 
-async function main() {
-  if (!slug || !/^[\w-]+$/.test(slug)) {
-    bodyEl.innerHTML = `<div class="empty-note">Post not found.</div>`;
-    return;
-  }
-
-  let raw;
+/* The article's raw Markdown, or null for a bad slug, a missing file, or a
+   network error — all of which read as "not found" to the visitor. */
+async function fetchPost() {
+  if (!slug || !/^[\w-]+$/.test(slug)) return null;
   try {
     const res = await fetch(`writings/${slug}.md`, { cache: "no-cache" });
-    if (!res.ok) throw new Error(res.status);
-    raw = await res.text();
+    return res.ok ? await res.text() : null;
   } catch {
+    return null;
+  }
+}
+
+async function main() {
+  const raw = await fetchPost();
+  if (raw === null) {
     bodyEl.innerHTML = `<div class="empty-note">Post not found.</div>`;
     return;
   }
@@ -64,13 +60,14 @@ async function main() {
 
   if (meta.date) {
     const idEl = document.getElementById("article-id");
-    idEl.textContent = `W${meta.date.replaceAll("-", "").slice(2)}`;
+    idEl.textContent = articleId(meta.date);
     idEl.hidden = false;
   }
 
-  const tags = (meta.tags || [])
-    .map?.((t) => `<span class="${tagClass(t)}">${t}</span>`)
-    .join("") || "";
+  // a bare "tags: foo" (no brackets) parses to a string; ignore it
+  const tags = (Array.isArray(meta.tags) ? meta.tags : [])
+    .map((t) => `<span class="${tagClass(t)}">${t}</span>`)
+    .join("");
   metaEl.innerHTML = `<span>Created on ${formatDate(meta.date)}</span>${tags}`;
 
   bodyEl.innerHTML = renderMarkdown(body);
@@ -189,13 +186,7 @@ function buildToc() {
 
   tocEl.classList.add("has-items");
   tocEl.replaceChildren();
-  const links = new Map();
-  let lockUntil = 0;
-
-  const setActive = (id) => {
-    links.forEach((a) => a.classList.remove("active"));
-    links.get(id)?.classList.add("active");
-  };
+  const links = new Map(); // spy key -> <a>, in document order
 
   // "Contents" mirrors the homepage Index: click -> top + clean URL, and
   // it owns the bar while the page sits above the first heading (key "").
@@ -203,13 +194,6 @@ function buildToc() {
   title.className = "toc-title";
   title.href = location.pathname + location.search;
   title.textContent = "Contents";
-  title.addEventListener("click", (e) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: "instant" });
-    history.replaceState(null, "", location.pathname + location.search);
-    setActive("");
-    lockUntil = Date.now() + 500;
-  });
   tocEl.appendChild(title);
   links.set("", title);
 
@@ -227,40 +211,20 @@ function buildToc() {
       a.appendChild(node.cloneNode(true));
     }
     a.className = `depth-${h.tagName[1]}`;
-    a.addEventListener("click", (e) => {
-      // same workaround as the homepage index: Chromium can drop smooth
-      // fragment scrolls, and a same-hash re-click never scrolls
-      e.preventDefault();
-      h.scrollIntoView({ behavior: "instant", block: "start" });
-      history.replaceState(null, "", `#${h.id}`);
-      setActive(h.id);
-      lockUntil = Date.now() + 500;
-    });
     tocEl.appendChild(a);
     links.set(h.id, a);
   }
 
-  // Scanline spy (same as the homepage index): an instant jump teleports
-  // headings past an IntersectionObserver band without firing it.
-  let deferred = 0;
-  const onScroll = () => {
-    const now = Date.now();
-    if (now < lockUntil) {
-      clearTimeout(deferred);
-      deferred = setTimeout(onScroll, lockUntil - now + 20);
-      return;
-    }
-    const atBottom = scrollY + innerHeight >= document.documentElement.scrollHeight - 2;
-    if (atBottom) return setActive(headings[headings.length - 1].id);
-    const line = innerHeight * 0.3;
-    let current = ""; // above the first heading: the bar rests on Contents
-    for (const h of headings) {
-      if (h.getBoundingClientRect().top <= line) current = h.id;
-    }
-    setActive(current);
-  };
-  addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  // resolve by element, not getElementById: a heading id can collide with
+  // the page's own ids (a heading named "TOC" slugs to "toc")
+  const byId = new Map(headings.map((h) => [h.id, h]));
+  const spy = createScrollSpy(links, (id) => byId.get(id));
+  for (const [key, a] of links) {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      spy.jumpTo(key);
+    });
+  }
 }
 
 main();

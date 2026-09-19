@@ -1,11 +1,20 @@
 /* ============================================================================
    article.css — article pages (post.html) only
-   Article header/typography, code, tables, math, callouts, TOC,
+   Back link, article header/typography, code, tables, math, callouts, TOC,
    and the experiment cards (.exp-*) that assets/post.js builds
    from E<n> headings.
    ============================================================================ */
 
 /* -------------------------------------------------------------- article -- */
+
+.back-link {
+  display: inline-block;
+  margin-top: 80px;
+  font-size: 14px;
+  color: var(--fg-soft);
+}
+.back-link:hover { color: var(--fg); }
+.back-link + .article-header { margin-top: 24px; }
 
 .article-header {
   margin-top: 80px;
@@ -205,9 +214,9 @@
 
 /* ------------------------------------------------------------------ toc -- */
 
-/* Table of contents. Narrow screens: a bordered card under the title at
+/* Table of contents. Narrow screens: an inline list under the title at
    body size. Wide screens (>=1280px): the same element becomes the fixed
-   left slot at sidebar size. */
+   left slot at sidebar size, one line per entry. */
 .toc {
   display: none;
   font-size: 16px;
@@ -250,27 +259,18 @@
     left: calc(50% - 620px); /* same slot as the homepage INDEX */
     width: 200px;
     margin: 0;
-    padding: 0;
-    border: none;
     font-size: 13px;
     line-height: 1.5;
   }
   .toc .toc-title {
     font-size: 12px;
-    letter-spacing: 0.08em;
-    padding: 3px 0 3px 10px;
-    border-left: 2px solid transparent;
     margin-bottom: 10px;
   }
   .toc a {
-    color: var(--fg-faint);
-    padding: 3px 0 3px 10px;
-    border-left: 2px solid transparent;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .toc a.active { color: var(--fg); border-left-color: var(--fg-soft); }
   .toc a.depth-3 { padding-left: 24px; }
   .toc a.depth-4 { padding-left: 38px; }
 }
@@ -288,7 +288,7 @@
 .exp-block > h3 { margin-top: 18px; }
 .exp-chip {
   display: inline-block;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
   color: #fff;
@@ -301,7 +301,7 @@
 /* Sub-experiment chips (E1.1 / E1.2 …) — outlined variant of .exp-chip */
 .exp-subchip {
   display: inline-block;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.6;

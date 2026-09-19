@@ -23,6 +23,7 @@
   --chart-s2: #eb6834;
   --chart-s3: #1baf7a;
   --chart-s4: #eda100;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;   /* id badges and chips; same in every theme */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -129,27 +130,6 @@ a {
   .site-nav .nav-right { gap: 12px; }
 }
 
-/* small highlight badge anchored to a nav item's bottom-right */
-.site-nav .nav-badged {
-  position: relative;
-  padding-right: 2px;
-}
-
-.site-nav .nav-badge {
-  position: absolute;
-  right: -14px;
-  bottom: -7px;
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: #fff;
-  background: var(--accent);
-  border-radius: 6px;
-  padding: 2px 5px;
-  pointer-events: none;
-}
-
 /* Day/night switch: a pill whose knob slides and swaps sun/moon with the
    active theme. Position is pure CSS off the same three theme conditions
    as the tokens; initTheme() only flips data-theme. */
@@ -236,7 +216,7 @@ a {
 /* Page id badge shown top-left above article/tool titles (W<yymmdd> / T<yymmdd>). */
 .page-id {
   display: inline-block;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   color: var(--fg-faint);
   border: 1px solid var(--divider);
@@ -247,7 +227,7 @@ a {
 
 /* Tool Set entries carry a short id (T<yymmdd>, creation date) for reference. */
 .tool-id {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--fg-faint);
   border: 1px solid var(--divider);
@@ -273,15 +253,6 @@ a {
   font-size: 12px;
   opacity: 0.85;
 }
-
-.back-link {
-  display: inline-block;
-  margin-top: 80px;
-  font-size: 14px;
-  color: var(--fg-soft);
-}
-.back-link:hover { color: var(--fg); }
-.back-link + .article-header { margin-top: 24px; }
 
 /* ----------------------------------------------------------- misc -- */
 

@@ -72,7 +72,11 @@ writings/          ← posts (Markdown + frontmatter)
 tools/             ← self-contained web tools, one folder each
   cs336-quiz/          CS336 Learning Tools (see its README)
   build-transformer/   implement transformer components in the browser (see its README)
-assets/            ← styles and JS (home.js, post.js, md.js, math.js)
+assets/            ← styles (base.css + one layer per page) and JS
+  site.js              shared, dependency-free: theme, dates, tags, scroll spy
+  md.js                Markdown pipeline (marked + KaTeX + highlight.js)
+  home.js, post.js     page controllers
+  chart.js, math.js    interactive figures; KaTeX for tools
 scripts/
   prerender.py         the one pre-push command (runs build_manifest itself)
   build_manifest.py    frontmatter → writings/manifest.json

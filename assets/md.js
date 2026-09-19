@@ -1,5 +1,7 @@
-/* Shared utilities: markdown rendering (marked + KaTeX + highlight.js),
-   frontmatter parsing, and theme toggling. */
+/* Markdown pipeline for article pages: rendering (marked + KaTeX +
+   highlight.js), frontmatter parsing, and callouts. The libraries come from
+   a CDN, so only pages that render Markdown import this file; dependency-free
+   helpers (theme, dates, tags, scroll spy) live in site.js. */
 
 import { marked } from "https://cdn.jsdelivr.net/npm/marked@14.1.4/lib/marked.esm.js";
 import markedKatex from "https://cdn.jsdelivr.net/npm/marked-katex-extension@5.1.4/+esm";
@@ -16,12 +18,9 @@ marked.use({
   gfm: true,
   renderer: {
     code({ text, lang }) {
-      let html;
-      if (lang && hljs.getLanguage(lang)) {
-        html = hljs.highlight(text, { language: lang }).value;
-      } else {
-        html = escapeHtml(text);
-      }
+      const html = lang && hljs.getLanguage(lang)
+        ? hljs.highlight(text, { language: lang }).value
+        : escapeHtml(text);
       return `<pre><code class="hljs">${html}</code></pre>`;
     },
   },
@@ -106,59 +105,4 @@ export function upgradeCallouts(rootEl) {
 
 export function renderMarkdown(body) {
   return marked.parse(body);
-}
-
-/* Tags with a dedicated chip style (matched case-insensitively). */
-const SPECIAL_TAGS = { "wandb": "tag-wandb", "agent runbook": "tag-agent", "in progress": "tag-progress" };
-
-export function tagClass(tag) {
-  const extra = SPECIAL_TAGS[tag.toLowerCase()];
-  return extra ? `tag ${extra}` : "tag";
-}
-
-export function formatDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso + "T00:00:00");
-  if (isNaN(d)) return iso;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-/* --- theme ---------------------------------------------------------------- */
-
-/* localStorage can throw (blocked site data, some private modes). */
-function storage(op, ...args) {
-  try { return localStorage[op](...args); } catch { return null; }
-}
-
-export function initTheme() {
-  const saved = storage("getItem", "theme");
-  if (saved) document.documentElement.dataset.theme = saved;
-  const btn = document.querySelector(".theme-toggle");
-  if (!btn) return;
-  const isSwitch = !!btn.querySelector(".theme-knob"); // knob styling is pure CSS
-  const icon = () => {
-    const t =
-      document.documentElement.dataset.theme ||
-      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    if (isSwitch) {
-      btn.setAttribute("role", "switch");
-      btn.setAttribute("aria-checked", String(t === "dark"));
-      return;
-    }
-    btn.textContent = t === "dark" ? "☀" : "☾";
-  };
-  icon();
-  btn.addEventListener("click", () => {
-    const current =
-      document.documentElement.dataset.theme ||
-      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    const next = current === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    storage("setItem", "theme", next);
-    icon();
-  });
 }

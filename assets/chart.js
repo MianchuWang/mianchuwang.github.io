@@ -195,7 +195,7 @@ function stageAxes(ctx) {
 
 function stageSeries(ctx) {
   const { series, opts, svg, px, py } = ctx;
-  series.forEach((s, i) => {
+  series.forEach((s) => {
     const d = s.points.map(([x, y], j) => `${j ? "L" : "M"}${px(x).toFixed(1)},${py(y).toFixed(1)}`).join("");
     const line = svgEl("path", { d, class: `chart-line chart-c${s._c}` }, svg);
     if (s.dash) line.setAttribute("stroke-dasharray", "7 5");
@@ -214,7 +214,7 @@ function stageEndLabels(ctx) {
   if (!opts.endLabels) return;
   const { width: W, margin: M } = opts;
   const ends = series
-    .map((s, i) => ({ label: s.label, i, c: s._c, y: py(s.points[s.points.length - 1][1]) }))
+    .map((s) => ({ label: s.label, c: s._c, y: py(s.points[s.points.length - 1][1]) }))
     .sort((a, b) => a.y - b.y);
   for (let k = 1; k < ends.length; k++) {
     if (ends[k].y - ends[k - 1].y < 16) ends[k].y = ends[k - 1].y + 16;
@@ -231,7 +231,7 @@ function stageHover(ctx) {
   const { width: W, height: H, margin: M } = opts;
 
   const cross = svgEl("line", { y1: M.t, y2: H - M.b, class: "chart-crosshair", visibility: "hidden" }, svg);
-  const hiDots = series.map((s, i) =>
+  const hiDots = series.map((s) =>
     svgEl("circle", { r: 4.5, class: `chart-dot chart-hi chart-c${s._c}`, visibility: "hidden" }, svg));
   const tip = document.createElement("div");
   tip.className = "chart-tip";
@@ -260,7 +260,7 @@ function stageHover(ctx) {
     tip.innerHTML =
       `<div class="chart-tip-head">${metric.xLabel || "x"} ${fmt(hits[0][0])}</div>` +
       series.map((s, i) =>
-        `<div class="chart-tip-row"><span class="chart-swatch chart-c${series[i]._c}"></span>` +
+        `<div class="chart-tip-row"><span class="chart-swatch chart-c${s._c}"></span>` +
         `<span class="chart-tip-label">${s.label}</span><span class="chart-tip-val">${fmt(hits[i][1])}</span></div>`
       ).join("");
     tip.hidden = false;
@@ -284,7 +284,7 @@ function stageLegend(ctx) {
   if (!show) return;
   const legend = document.createElement("div");
   legend.className = "chart-legend";
-  legend.innerHTML = series.map((s, i) =>
+  legend.innerHTML = series.map((s) =>
     `<span class="chart-legend-item"><span class="chart-swatch chart-c${s._c}"></span>${s.label}</span>`
   ).join("");
   el.appendChild(legend);

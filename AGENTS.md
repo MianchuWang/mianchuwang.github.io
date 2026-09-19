@@ -9,10 +9,12 @@ no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
   Writing) render from JSON: `profile/*.json` and `writings/manifest.json`.
 - `assets/` CSS is layered: `base.css` (theme tokens, nav, footer, badges —
   every page) + one page layer (`home.css` / `article.css`, charts add
-  `chart.css`). JS: `md.js` shared markdown+theme utils, `home.js` and
-  `post.js` page controllers (each has a header map), `chart.js` interactive
-  figures, `math.js` KaTeX for tools. New styles go in the layer that owns
-  the page; new tokens go in all three theme blocks of `base.css`.
+  `chart.css`). JS: `site.js` dependency-free shared utils (theme, dates,
+  tags, scroll spy), `md.js` the Markdown pipeline (CDN imports — article
+  pages only, never the homepage), `home.js` and `post.js` page controllers
+  (each has a header map), `chart.js` interactive figures, `math.js` KaTeX
+  for tools. New styles go in the layer that owns the page; new theme tokens
+  go in all three theme blocks of `base.css`.
 - `writings/*.md` — articles, rendered client-side by `post.html?p=<slug>`
   (`assets/md.js`). Slug = filename without `.md`.
 - `tools/` — self-contained single-page HTML tools, listed in `profile/tools.json`.

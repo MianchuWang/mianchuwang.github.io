@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Scan writings/*.md frontmatter and write writings/manifest.json.
 
-Run manually for local preview; CI runs it automatically on deploy.
+Normally run through scripts/prerender.py, which calls this first.
 """
 import json
 import re
