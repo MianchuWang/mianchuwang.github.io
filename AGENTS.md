@@ -102,7 +102,12 @@ want live — ask once whether to push.
   `## 2. Workers`; `## 3. GPU placement`). Cite source lines of
   `verl/trainer/ppo/ray_trainer.py` (`fit` starts at line 1362).
 - Style for this article: as terse as possible; do not bold new terms.
-  Discuss one part at a time before writing it.
+  Discuss one part at a time before writing it. When a fix or a small
+  addition comes up during the discussion, edit the article directly; do
+  not hold it for the end.
+- Code excerpts: copy code from `fit` only, and only the parts that matter
+  (skip the logger, progress bar and similar). Do not quote or analyze the
+  functions `fit` calls unless the user asks for a specific one.
 
 ## Maintaining these instructions
 

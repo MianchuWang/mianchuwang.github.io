@@ -29,16 +29,40 @@ The process that runs `fit` is the driver. `fit` returns when training reaches t
 
 ### 1.1 Before the loop
 
-Lines 1369–1420 run once, before the first step, in six parts:
+Lines 1369–1420 run once, before the first step. Restore state loads a checkpoint if one exists, sends the weights to the generation side, and computes the starting epoch. Validate before training evaluates the model once and logs the metrics. If `val_only` is also set, `fit` returns there.
 
-| Lines | Part |
-|---|---|
-| 1369‑1370 | If the dump executor (a background thread that saves samples) was shut down, restart it. |
-| 1372‑1381 | Create the logger. |
-| 1383‑1389 | Load the checkpoint, send the weights to the generation side, compute the starting epoch. |
-| 1391‑1400 | Validate once. Return if `val_only` is set. |
-| 1402‑1404 | If `rollout.skip` is on, reuse saved rollouts instead of generating. |
-| 1406‑1420 | Create the progress bar, set the step counter to 1, initialize bookkeeping variables. |
+**Restore state** (lines 1383–1389).
+
+```python
+self.global_steps = 0
+
+# load checkpoint and update weights before doing anything
+self._load_checkpoint()
+self.checkpoint_manager.update_weights(self.global_steps)
+
+current_epoch = self.global_steps // len(self.train_dataloader)
+```
+
+`_load_checkpoint()` looks for the latest checkpoint on the local disk. If one exists, it restores the step counter, the actor, and the position of the dataloader. Its behavior is set by `self.config.trainer.resume_mode`: `disable` skips the loading and trains from scratch; `auto`, the default, loads the latest checkpoint if one exists; `resume_path` loads the checkpoint given in `resume_from_path`. It loads the actor through `actor_rollout_wg`. Here `wg` means worker group: the GPU workers that hold the actor. GRPO has no critic, so `critic_wg` does not exist and no critic is loaded.
+
+`update_weights` copies the actor's weights from the training side to the generation side. There are three engines in verl: the model engine, the rollout engine, and the checkpoint engine. The model engine, such as FSDP, trains the actor. The rollout engine, such as vLLM, generates responses; it runs as one or more rollout replicas, and each replica is one inference server with its own copy of the model. When the two share GPUs (`backend="naive"`), the model engine hands the weights to the rollout engine directly. If not, the checkpoint engine moves the weights. In both cases `CheckpointEngineManager` coordinates the transfer.
+
+**Validate before training** (lines 1391–1400).
+
+```python
+# perform validation before training
+# currently, we only support validation using the reward_function.
+if self.config.trainer.get("val_before_train", True):
+    val_metrics = self._validate()
+    assert val_metrics, f"{val_metrics=}"
+    pprint(f"Initial validation metrics: {val_metrics}")
+    logger.log(data=val_metrics, step=self.global_steps)
+    if self.config.trainer.get("val_only", False):
+        self._shutdown_dump_executor()
+        return
+```
+
+The `assert` stops the run if validation returns no metrics. The dump executor is a background thread that writes generated samples to disk, so that the loop does not wait for the disk. It writes only if `trainer.rollout_data_dir` or `trainer.validation_data_dir` is set. With `val_only`, `fit` waits for it to finish, and then returns without training.
 
 ### 1.2 In the loop
 
