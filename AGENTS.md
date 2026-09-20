@@ -93,6 +93,16 @@ want live — ask once whether to push.
 - The filename is retained for URL continuity and does not constrain the new
   article's scope. Verify technical claims against the source version used
   in the new discussion.
+- Source version: verl v0.8.0. The article follows the `main_ppo.py` +
+  `RayPPOTrainer.fit` path (data passed as `DataProto`), which is what the
+  user's experiments run; `main_ppo.py` is marked deprecated in v0.8.0 in
+  favor of `main_ppo_sync.py`, which the article does not cover.
+- Structure: numbered sections written into the headings (`## 1. Training
+  loop` with `1.1 Before the loop`, `1.2 In the loop`, `1.3 After the loop`;
+  `## 2. Workers`; `## 3. GPU placement`). Cite source lines of
+  `verl/trainer/ppo/ray_trainer.py` (`fit` starts at line 1362).
+- Style for this article: as terse as possible; do not bold new terms.
+  Discuss one part at a time before writing it.
 
 ## Maintaining these instructions
 
