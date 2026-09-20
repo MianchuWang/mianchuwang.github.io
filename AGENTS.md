@@ -1,115 +1,156 @@
-# mianchuwang.github.io
+# AGENTS.md
 
-Personal site of Mianchu Wang, served by GitHub Pages straight from `main` —
-no build pipeline, plain HTML/CSS/JS, no frameworks. Keep it that way.
+Instructions for any AI model working in this repository. This file describes
+how the site is designed and built. It is independent of article content: do
+not put notes about a specific article, or a session log, here.
+
+## The site
+
+Personal site of Mianchu Wang. GitHub Pages serves `main` directly:
+**push = deploy**. There is no build pipeline and no framework, only plain
+HTML, CSS and ES modules. Keep it that way.
+
+Design principles:
+
+- **Content and UI are separate.** Articles are Markdown files, homepage data
+  is JSON, and a small static frontend renders both in the browser.
+- **Readable without JavaScript.** The homepage content is also baked into
+  `index.html` as static HTML, and `llms.txt` points agents at the raw
+  Markdown of every article.
+- **The homepage stays light.** It loads `home.js` and `site.js` only. It
+  must never import `md.js`, which pulls marked, KaTeX and highlight.js from
+  a CDN.
+- **Light and dark are equal.** Every color comes from a theme token. Check
+  both themes after any style change.
+- **No visual change by accident.** A refactor must leave the rendered pages
+  identical. Compare before and after.
+
+## Commands
+
+```bash
+python3 scripts/dev_server.py 8644 .   # local preview, no-cache + live reload
+python3 scripts/prerender.py           # rebuild manifest, homepage bake, llms.txt
+```
+
+Reuse a preview server that is already running on port 8644.
 
 ## Layout
 
-- `index.html` + `assets/home.js` — homepage; sections (Publications, Toolbox,
-  Writing) render from JSON: `profile/*.json` and `writings/manifest.json`.
-- `assets/` CSS is layered: `base.css` (theme tokens, nav, footer, badges —
-  every page) + one page layer (`home.css` / `article.css`, charts add
-  `chart.css`). JS: `site.js` dependency-free shared utils (theme, dates,
-  tags, scroll spy), `md.js` the Markdown pipeline (CDN imports — article
-  pages only, never the homepage), `home.js` and `post.js` page controllers
-  (each has a header map), `chart.js` interactive figures, `math.js` KaTeX
-  for tools. New styles go in the layer that owns the page; new theme tokens
-  go in all three theme blocks of `base.css`.
-- `writings/*.md` — articles, rendered client-side by `post.html?p=<slug>`
-  (`assets/md.js`). Slug = filename without `.md`.
-- `tools/` — self-contained single-page HTML tools, listed in `profile/tools.json`.
-- `scripts/dev_server.py` — local preview (`.claude/launch.json`, name `site`,
-  port 8644). `scripts/build_manifest.py` — see below.
+```
+index.html               homepage; static copy between <!--bake:*--> markers
+post.html                article page: post.html?p=<slug>
+llms.txt                 generated index for agents (never edit by hand)
+profile/*.json           homepage data: profile, publications, tools
+writings/*.md            articles; slug = filename without .md
+writings/manifest.json   generated article index (never edit by hand)
+writings/external.json   externally hosted posts (entries carry a url)
+writings/figures/        chart data (JSON) and static figures
+tools/<name>/            self-contained tools with their own CSS and JS
+assets/                  shared CSS and JS (see below)
+scripts/                 prerender.py, build_manifest.py, dev_server.py
+```
 
-## Conventions
+`README.md` has the human workflow for adding an article or a tool.
 
-- Article pages show `Created on <formatted date>` beneath the title via
-  `assets/post.js`; for example, `Created on Sep 18, 2026`.
-- `draft: true` excludes an article from the homepage index. Articles being
-  written in the homepage list use the `"In Progress"` tag instead.
+## How pages render
 
-- Article frontmatter: `title`, `date`, `tags`, `summary`.
-  - `date` is the **creation date — never bump it on ordinary edits**.
-    Correct it when explicitly requested by the user.
-  - `summary` is one short sentence; it feeds `llms.txt` (the homepage list
-    shows tags instead).
+**Homepage.** `assets/home.js` fetches `profile/*.json` and
+`writings/manifest.json` and renders the hero, then the sections
+Publications, Writing and Toolbox into `#sections`. `scripts/prerender.py`
+writes the same markup between the bake markers.
+
+- The two must stay structurally identical: change one, change the other.
+  `postHtml`, `toolHtml` and `publicationHtml` in `home.js`, and
+  `formatDate`, `tagClass` and `articleId` in `site.js`, each have a mirror
+  in `prerender.py`.
+- Never edit inside the bake markers by hand. Run `prerender.py`.
+- If a fetch fails, the baked content stays on the page.
+
+**Article page.** `assets/post.js` fetches `writings/<slug>.md`, parses the
+frontmatter, renders the Markdown with `md.js`, and then runs these passes in
+order: callouts, charts, heading anchors, experiment cards (`E1 —` headings),
+copy buttons, and the Contents.
+
+- The Contents lists `h2` and `h3` only. `h4` headings keep their anchors.
+- Callouts are blockquotes that start with `[!info]`, `[!note]`, `[!warning]`
+  and so on.
+- Math is KaTeX through `marked-katex-extension`; `$x$` works without spaces.
+- Charts are `<div class="chart" data-src="…json" data-metric="…">`, rendered
+  by `assets/chart.js`. Its header comment holds a compatibility contract:
+  add features as new options whose default keeps old charts unchanged.
+
+**Tools.** Each tool under `tools/` is self-contained and does not load the
+site's CSS. The only shared file is `assets/math.js` (KaTeX for injected
+HTML). Its KaTeX version must match the one in `post.html`.
+
+## CSS and JS structure
+
+- CSS is layered: `base.css` (theme tokens, reset, nav, theme switch, tags,
+  id badges, footer) is loaded on every page, plus one page layer:
+  `home.css` or `article.css`. Article pages add `chart.css`. A new style
+  goes in the layer that owns the page.
+- Theme tokens live in `base.css` in three blocks: light (`:root`), system
+  dark (`@media (prefers-color-scheme: dark)` on
+  `:root:not([data-theme="light"])`), and manual dark
+  (`:root[data-theme="dark"]`). A new themed token goes in all three. A token
+  that does not depend on the theme, such as `--font-mono`, goes in `:root`
+  only.
+- The theme switch is pure CSS. `initTheme()` only flips `data-theme`, saves
+  it, and keeps ARIA in sync. An inline script in each HTML head applies the
+  saved theme before first paint.
+- JS modules: `site.js` has no imports (theme, dates, tags, ids, and the
+  scroll spy shared by the homepage Index and the article Contents). `md.js`
+  is the Markdown pipeline. `home.js` and `post.js` are the page controllers;
+  each starts with a header comment that maps the file.
+- Wide screens (1280px and up) show a fixed left index on both page types.
+  Narrow screens show the homepage sections in the top nav and the article
+  Contents inline under the title.
+
+## Content conventions
+
+- Frontmatter: `title`, `date`, `tags`, `summary`, optional `lang` and
+  `draft`.
+  - `date` is the creation date. **Never change it on an ordinary edit.**
+  - `summary` is one short sentence. It feeds `llms.txt`; the homepage shows
+    tags instead.
+  - `draft: true` keeps an article off the homepage. An article that is
+    listed while being written carries the `In Progress` tag instead.
+- Ids: articles get `W<yymmdd>` from `date` automatically. Tools set
+  `T<yymmdd>` in `profile/tools.json`.
+- Tags are sorted alphabetically at build time; status tags such as
+  `In Progress` go last. `wandb`, `Agent Runbook` and `In Progress` have
+  their own chip style (`SPECIAL_TAGS`).
 - **After changing frontmatter or any `profile/*.json`, run
-  `python3 scripts/prerender.py`.** It regenerates `writings/manifest.json`
-  (never edit that by hand) and re-bakes the homepage's static HTML between
-  the `<!--bake:*-->` markers in `index.html` — the baked copy is what
-  crawlers and non-JS agents see, so a stale bake silently shows them old
-  content. Never edit inside the bake markers by hand; `assets/home.js`
-  re-renders the same markup at runtime, and the two must stay structurally
-  identical (change one → change the other).
-- Markdown supports Notion-style callouts: blockquote starting with `[!info]`,
-  `[!warning]`, etc.
-- Tool ids follow `T<yymmdd>`; article ids `W<yymmdd>` are derived from the
-  `date` automatically (nothing to set). Tags are auto-sorted alphabetically
-  by `build_manifest.py`.
+  `python3 scripts/prerender.py`.** A stale bake silently shows old content
+  to crawlers and agents.
 
-## Local preview
+## Checking a change
 
-Run `python3 scripts/dev_server.py 8644 .` and open `http://localhost:8644`.
-Reuse the running server when available. See `README.md` for the full workflow.
+- Look at the page in the local preview, in both themes, at a wide and a
+  narrow width. Check the browser console for errors.
+- Two draft articles are regression fixtures: `?p=chart-gallery` (every chart
+  case) and `?p=technical-writing-template` (every Markdown feature). Open
+  them after touching `chart.js`, `md.js`, `post.js` or `article.css`.
+- After touching `home.js` or `prerender.py`, run `prerender.py` and confirm
+  that `index.html` and `llms.txt` change only where intended.
 
-## Publishing
+## Git and publishing
 
-Push to `main` = deploy. Verify in the local preview first (port 8644);
-check both light and dark themes for style changes (`.theme-toggle`).
+- **Ask before every commit.** Prefer a few commits over many; do not split
+  work into a neat series.
+- **Never push without an explicit push instruction in the current request.**
+  An earlier "push it" does not carry over.
+- **Never publish a new article the owner has not read.**
+- Do not track or nag about unpushed commits.
 
-**Never push without an explicit push instruction from the user in the current
-request** — a past "push it" does not carry over to later changes. **Never
-publish a new article the user has not read** — push authorization covers
-reviewed work, not sight-unseen publications. Commit in milestone-sized
-batches (a finished feature, a completed analysis section), not per-edit —
-dozens of micro-commits are noise. Pushing is the user's call, every time. Don't track or nag about unpushed commits;
-only when a substantial piece of work lands — the kind the user would plausibly
-want live — ask once whether to push.
+## Working with the owner
 
-## Working with Mianchu
+- Discuss in Chinese. Articles are written in English.
+- Write simple, direct, concise English: short sentences, common words, terms
+  defined before use.
+- Work one step at a time. Do not fill in sections ahead of the discussion.
 
-- Discuss the work in Chinese; existing articles are written in English.
-- Learn and write collaboratively, one step at a time. Do not fill an entire
-  article or add unrequested sections ahead of the discussion.
-- Use direct, clear, concise academic prose in articles. Prefer precise terms,
-  short sentences, and logically ordered explanations. Define abbreviations
-  on first use; avoid filler, repeated framing, and unnecessary jargon.
-- Keep durable project decisions here; keep article content in `writings/`.
-  Update these notes when decisions change rather than appending a session log.
+## Maintaining this file
 
-## Current verl article
-
-- File: `writings/2026-09-verl-switch.md`.
-- Title: `The System Design of verl: GRPO as an Example`.
-- Created: `2026-09-18`; article ID: `W260918`.
-- Listed in Writing with `system design`, `verl`, and `In Progress` tags.
-- Focus on system design: orchestration, component responsibilities and
-  interfaces, data and weight movement, GPU memory, and communication costs.
-  Use GRPO as a concrete workload; explain RL concepts only as needed to
-  understand the system, without making algorithm derivations the main topic.
-- The user requested a fresh start. The previous training/rollout-switch
-  article recovered from Git history was deliberately cleared. Do not restore
-  or reuse that text unless requested; develop the new article step by step.
-- The filename is retained for URL continuity and does not constrain the new
-  article's scope. Verify technical claims against the source version used
-  in the new discussion.
-- Source version: verl v0.8.0. The article follows the `main_ppo.py` +
-  `RayPPOTrainer.fit` path (data passed as `DataProto`), which is what the
-  user's experiments run; `main_ppo.py` is marked deprecated in v0.8.0 in
-  favor of `main_ppo_sync.py`, which the article does not cover.
-- Structure: numbered sections written into the headings (`## 1. Training
-  loop` with `1.1 Before the loop`, `1.2 In the loop`, `1.3 After the loop`;
-  `## 2. Workers`; `## 3. GPU placement`). Cite source lines of
-  `verl/trainer/ppo/ray_trainer.py` (`fit` starts at line 1362).
-- Style for this article: as terse as possible; do not bold new terms.
-  Discuss one part at a time before writing it. When a fix or a small
-  addition comes up during the discussion, edit the article directly; do
-  not hold it for the end.
-- Code excerpts: copy code from `fit` only, and only the parts that matter
-  (skip the logger, progress bar and similar). Do not quote or analyze the
-  functions `fit` calls unless the user asks for a specific one.
-
-## Maintaining these instructions
-
-`AGENTS.md` is the single source of project instructions. Keep shared rules
-and durable collaboration notes in this file.
+`AGENTS.md` is the single source of project instructions for AI models.
+Update a rule in place when a decision changes. Keep it short.

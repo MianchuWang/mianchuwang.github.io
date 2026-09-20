@@ -31,7 +31,7 @@ The process that runs `fit` is the driver. `fit` returns when training reaches t
 
 Lines 1369–1420 run once, before the first step. Restore state loads a checkpoint if one exists, sends the weights to the generation side, and computes the starting epoch. Validate before training evaluates the model once and logs the metrics. If `val_only` is also set, `fit` returns there.
 
-**Restore state** (lines 1383–1389).
+#### 1.1.1 Restore state (lines 1383–1389)
 
 ```python
 self.global_steps = 0
@@ -47,7 +47,7 @@ current_epoch = self.global_steps // len(self.train_dataloader)
 
 `update_weights` copies the actor's weights from the training side to the generation side. There are three engines in verl: the model engine, the rollout engine, and the checkpoint engine. The model engine, such as FSDP, trains the actor. The rollout engine, such as vLLM, generates responses; it runs as one or more rollout replicas, and each replica is one inference server with its own copy of the model. When the two share GPUs (`backend="naive"`), the model engine hands the weights to the rollout engine directly. If not, the checkpoint engine moves the weights. In both cases `CheckpointEngineManager` coordinates the transfer.
 
-**Validate before training** (lines 1391–1400).
+#### 1.1.2 Validate before training (lines 1391–1400)
 
 ```python
 # perform validation before training
@@ -73,7 +73,7 @@ for epoch in range(current_epoch, self.config.trainer.total_epochs):
     for batch_dict in self.train_dataloader:
 ```
 
-**1. Build the batch** (lines 1435–1448).
+#### 1.2.1 Build the batch (lines 1435–1448)
 
 ```python
 batch: DataProto = DataProto.from_single_dict(batch_dict)
@@ -92,7 +92,17 @@ rollout_n = self.config.actor_rollout_ref.rollout.n
 gen_batch_output = gen_batch.repeat(repeat_times=rollout_n, interleave=True)
 ```
 
-**2. Generate** (lines 1467–1471).
+A `DataProto` has three fields:
+
+| Field | Type | Holds |
+|---|---|---|
+| `batch` | `TensorDict` | Tensors with one row per sample, such as `response_mask` and `old_log_probs`. |
+| `non_tensor_batch` | dict of NumPy arrays | Other per-sample data, such as `uid`. |
+| `meta_info` | dict | Values for the whole batch, such as `temperature`. |
+
+The first lines wrap the dataloader's output in a `DataProto`, set the rollout temperature, and give each prompt a unique `uid`. At this point a prompt is still a list of chat messages (`raw_prompt`), not tokens; it is tokenized during generation. `_get_gen_batch` moves the fields that generation needs out of `batch` into a new `DataProto`, `gen_batch`. `batch` keeps only the reward fields and `uid`. `repeat` copies each prompt `rollout.n` times, with the copies next to each other (`interleave=True`). The copies share one `uid`, which later groups the responses to the same prompt.
+
+#### 1.2.2 Generate (lines 1467–1471)
 
 ```python
 with marked_timer("gen", timing_raw, color="red"):
@@ -101,7 +111,9 @@ with marked_timer("gen", timing_raw, color="red"):
     self.checkpoint_manager.sleep_replicas()
 ```
 
-**3. Merge and balance** (lines 1496–1507).
+`marked_timer` records how long the block takes, under the name `gen`. `generate_sequences` sends the repeated prompts to the rollout replicas and returns the responses as a `DataProto`. When the two engines share GPUs, `sleep_replicas` then frees the rollout engine's GPU memory, both the weights and the KV cache, so that the model engine can use it for training. The weights are discarded, not moved to the CPU (vLLM sleep level 2, verl's default): the model engine holds the real copy, and `update_weights` writes the updated weights into the rollout engine at the end of the step.
+
+#### 1.2.3 Merge and balance (lines 1496–1507)
 
 ```python
 # repeat to align with repeated responses in rollout
@@ -118,7 +130,7 @@ if self.config.trainer.balance_batch:
     self._balance_batch(batch, metrics=metrics)
 ```
 
-**4. Reward** (lines 1518–1525).
+#### 1.2.4 Reward (lines 1518–1525)
 
 ```python
 with marked_timer("reward", timing_raw, color="yellow"):
@@ -131,7 +143,7 @@ with marked_timer("reward", timing_raw, color="yellow"):
     reward_tensor, reward_extra_infos_dict = extract_reward(batch)
 ```
 
-**5. Old log-probabilities** (lines 1542–1567).
+#### 1.2.5 Old log-probabilities (lines 1542–1567)
 
 ```python
 with marked_timer("old_log_prob", timing_raw, color="blue"):
@@ -140,7 +152,7 @@ with marked_timer("old_log_prob", timing_raw, color="blue"):
     batch = batch.union(old_log_prob)
 ```
 
-**6. Reference log-probabilities** (lines 1576–1580).
+#### 1.2.6 Reference log-probabilities (lines 1576–1580)
 
 ```python
 if self.use_reference_policy:
@@ -150,7 +162,7 @@ if self.use_reference_policy:
         batch = batch.union(ref_log_prob)
 ```
 
-**7. Advantage** (lines 1588–1633).
+#### 1.2.7 Advantage (lines 1588–1633)
 
 ```python
 with marked_timer("adv", timing_raw, color="brown"):
@@ -182,7 +194,7 @@ with marked_timer("adv", timing_raw, color="brown"):
     )
 ```
 
-**8. Update the actor** (lines 1647–1649).
+#### 1.2.8 Update the actor (lines 1647–1649)
 
 ```python
 # update actor
@@ -190,7 +202,7 @@ with marked_timer("update_actor", timing_raw, color="red"):
     actor_output = self._update_actor(batch)
 ```
 
-**9. Save a checkpoint** (lines 1663–1671).
+#### 1.2.9 Save a checkpoint (lines 1663–1671)
 
 ```python
 if self.config.trainer.save_freq > 0 and (
@@ -204,7 +216,7 @@ if self.config.trainer.save_freq > 0 and (
         self._save_checkpoint()
 ```
 
-**10. Sync the weights** (lines 1673–1675).
+#### 1.2.10 Sync the weights (lines 1673–1675)
 
 ```python
 # update weights from trainer to rollout
@@ -212,7 +224,7 @@ with marked_timer("update_weights", timing_raw, color="red"):
     self.checkpoint_manager.update_weights(self.global_steps)
 ```
 
-**11. Validate** (lines 1685–1693).
+#### 1.2.11 Validate (lines 1685–1693)
 
 ```python
 # validate
@@ -226,7 +238,7 @@ if self.config.trainer.test_freq > 0 and (
     metrics.update(val_metrics)
 ```
 
-**12. Log and advance** (lines 1750–1753).
+#### 1.2.12 Log and advance (lines 1750–1753)
 
 ```python
 logger.log(data=metrics, step=self.global_steps)
