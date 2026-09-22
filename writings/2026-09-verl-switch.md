@@ -391,4 +391,131 @@ The color of a name is the field of the `DataProto` that holds it: <span class="
 
 ## 2. Workers
 
+### 2.1 One worker per GPU
+
+GRPO runs on one resource pool, `global_pool`, with one worker process per GPU. Each worker is an `ActorRolloutRefWorker`: the actor, the rollout engine and the reference policy live in one process. Three steps set this up. `main_ppo.py` decides the roles and the pool (2.1.1). `init_workers` in `ray_trainer.py` turns the pool into a worker group, `actor_rollout_wg`, and calls `init_model` on every worker (2.1.2). `init_model` builds the three engines inside each process (2.1.3).
+
+#### 2.1.1 Roles and the resource pool (`add_actor_rollout_worker` and `init_resource_pool_mgr`, main_ppo.py, lines 132–190)
+
+```python lines=132-134,140-145
+actor_rollout_cls = ActorRolloutRefWorker
+ray_worker_group_cls = RayWorkerGroup
+
+...
+if need_reference_policy(config) and not ref_in_actor:
+    role = Role.ActorRolloutRef
+else:
+    role = Role.ActorRollout
+self.role_worker_mapping[role] = ray.remote(actor_rollout_cls)
+self.mapping[role] = "global_pool"
+```
+
+`actor_rollout_cls` is `ActorRolloutRefWorker`, the class that every GRPO worker runs. A role is a member of the `Role` enum: what a worker plays, such as `Actor`, `Critic` or `RefPolicy`, or a combination such as `ActorRolloutRef`. Without LoRA, `ref_in_actor` is false, so the role is `Role.ActorRolloutRef` whenever the KL penalty needs a reference policy. Lines 144 and 145 fill two tables: the worker class of the role, wrapped by `ray.remote` so that it can be created in another process, and the resource pool of the role, by name. Nothing is created yet.
+
+```python lines=161-164,190
+global_pool_id = "global_pool"
+resource_pool_spec = {
+    global_pool_id: [config.trainer.n_gpus_per_node] * config.trainer.nnodes,
+}
+...
+resource_pool_manager = ResourcePoolManager(resource_pool_spec=resource_pool_spec, mapping=self.mapping)
+```
+
+`resource_pool_spec` says how many GPUs each pool has, one entry per node. GRPO uses one pool, `global_pool`, with every GPU. `ResourcePoolManager` joins the two tables. For a role, it reads the pool name from `mapping` and takes the GPUs of that pool from `resource_pool_spec`. 2.1.2 creates the pools from it.
+
+#### 2.1.2 Create the worker group (`init_workers`, ray_trainer.py, lines 782–898)
+
+```python lines=782,787-792,794-796,861,864-871,894-898
+self.resource_pool_manager.create_resource_pool()
+...
+actor_role = Role.ActorRolloutRef if Role.ActorRolloutRef in self.role_worker_mapping else Role.ActorRollout
+if self.hybrid_engine:
+    actor_rollout_resource_pool = self.resource_pool_manager.get_resource_pool(actor_role)
+    actor_rollout_cls = RayClassWithInitArgs(
+        cls=self.role_worker_mapping[actor_role],
+        config=self.config.actor_rollout_ref,
+        ...
+        role=str(actor_role),
+    )
+    self.resource_pool_to_cls[actor_rollout_resource_pool][str(actor_role)] = actor_rollout_cls
+...
+for resource_pool, class_dict in self.resource_pool_to_cls.items():
+    ...
+    worker_dict_cls = create_colocated_worker_cls(class_dict=class_dict)
+    wg_dict = self.ray_worker_group_cls(
+        resource_pool=resource_pool,
+        ray_cls_with_init=worker_dict_cls,
+        **wg_kwargs,
+    )
+    spawn_wg = wg_dict.spawn(prefix_set=class_dict.keys())
+    all_wg.update(spawn_wg)
+...
+self.actor_rollout_wg = all_wg[str(actor_role)]
+self.actor_rollout_wg.init_model()
+
+if self.ref_in_actor:
+    self.ref_policy_wg = self.actor_rollout_wg
+```
+
+#### 2.1.3 Inside a worker (`ActorRolloutRefWorker.__init__` and `init_model`, engine_workers.py, lines 441–629)
+
+```python lines=441-445,448-455
+def __init__(
+    self, config: DictConfig, role: str, distillation_config: Optional[DistillationConfig] = None, **kwargs
+):
+    Worker.__init__(self)
+    self.config = config
+    ...
+    self.role = role
+    self.actor: TrainingWorker = None
+    self.ref: TrainingWorker = None
+    self.rollout: BaseRollout = None
+    assert self.role in ["actor", "rollout", "ref", "actor_rollout", "actor_rollout_ref"]
+    self._is_actor = self.role in ["actor", "actor_rollout", "actor_rollout_ref"]
+    self._is_rollout = self.role in ["rollout", "actor_rollout", "actor_rollout_ref"]
+    self._is_ref = self.role in ["ref", "actor_rollout_ref"]
+```
+
+```python lines=500-504,537-542,585-592,608-611,618-619,627-629
+def init_model(self):
+    model_config: HFModelConfig = omega_conf_to_dataclass(self.config.model)
+
+    # 1. build reference model
+    if "ref" in self.role:
+        ...
+        self.ref = TrainingWorker(config=ref_training_config)
+        self.ref.reset()
+        self.set_dispatch_collect(mesh_name="ref", **self.ref.get_dispatch_collect())
+
+    # 2. build actor model
+    if "actor" in self.role:
+        ...
+        self.actor = TrainingWorker(config=actor_training_config)
+        self.actor.reset()
+        self.actor.set_loss_fn(self.loss_fn)
+        self.set_dispatch_collect(mesh_name="actor", **self.actor.get_dispatch_collect())
+
+    # 3. build rollout engine
+    if "rollout" in self.role:
+        rollout_config: RolloutConfig = omega_conf_to_dataclass(self.config.rollout)
+        ...
+        rollout_cls: type[BaseRollout] = get_rollout_class(rollout_config.name, rollout_config.mode)
+        self.rollout = rollout_cls(
+            config=rollout_config, model_config=model_config, device_mesh=rollout_device_mesh
+        )
+        ...
+    # 4. build checkpoint engine
+    if "actor" in self.role:
+        ...
+        self.checkpoint_engine = CheckpointEngineRegistry.new(
+            backend, is_master=(torch.distributed.get_rank() == 0), bucket_size=bucket_size, **engine_kwargs
+        )
+```
+
+### 2.2 One remote call
+
+### 2.3 Inside the model engine
+
+### 2.4 Inside the rollout engine
+
 ## 3. GPU placement
