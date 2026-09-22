@@ -17,7 +17,7 @@ We examine verl's system design through a single training step of Group Relative
 
 The training loop is `RayPPOTrainer.fit`, at line 1362 of [`verl/trainer/ppo/ray_trainer.py`](https://github.com/verl-project/verl/blob/v0.8.0/verl/trainer/ppo/ray_trainer.py#L1362).
 
-**What it does.** A task is one unit of work in a training step, such as generating responses, computing advantages, or updating the actor. `fit` decides the order of the tasks and passes data between them. It does not run the model. Each heavy task is a remote call to GPU workers. Only the advantage computation, which is light, runs inside `fit`.
+**What it does.** A task is one unit of work in a training step, such as generating responses, computing advantages, or updating the actor. `fit` decides the order of the tasks and passes data between them. It does not run the model. Each heavy task is a remote call to GPU workers. Light work, such as the advantage computation, runs inside `fit`.
 
 **When it is called.** Once per run. `python3 -m verl.trainer.main_ppo` reaches it in three steps:
 
@@ -45,7 +45,7 @@ current_epoch = self.global_steps // len(self.train_dataloader)
 
 `_load_checkpoint()` looks for the latest checkpoint on the local disk. If one exists, it restores the step counter, the actor, and the position of the dataloader. Its behavior is set by `self.config.trainer.resume_mode`: `disable` skips the loading and trains from scratch; `auto`, the default, loads the latest checkpoint if one exists; `resume_path` loads the checkpoint given in `resume_from_path`. It loads the actor through `actor_rollout_wg`. Here `wg` means worker group: the GPU workers that hold the actor. GRPO has no critic, so `critic_wg` does not exist and no critic is loaded.
 
-`update_weights` copies the actor's weights from the model engine to the rollout engine. There are three engines in verl: the model engine, the rollout engine, and the checkpoint engine. The model engine, such as FSDP, trains the actor. The rollout engine, such as vLLM, generates responses; it runs as one or more rollout replicas, and each replica is one inference server with its own copy of the model. When the two share GPUs (`backend="naive"`), the model engine hands the weights to the rollout engine directly. If not, the checkpoint engine moves the weights. In both cases `CheckpointEngineManager` coordinates the transfer.
+`update_weights` copies the actor's weights from the model engine to the rollout engine. There are three engines in verl: the model engine, the rollout engine, and the checkpoint engine. The model engine, such as FSDP, trains the actor. The rollout engine, such as vLLM, generates responses. When the two share GPUs (`backend="naive"`), the model engine hands the weights to the rollout engine directly. If not, the checkpoint engine moves the weights. In both cases `CheckpointEngineManager` coordinates the transfer.
 
 #### 1.1.2 Validate before training (lines 1391–1400)
 
@@ -75,7 +75,16 @@ for epoch in range(current_epoch, self.config.trainer.total_epochs):
         timing_raw = {}
 ```
 
-`metrics` collects the numbers to log at the end of the step, and `timing_raw` the time of each part. Two more lines matter later. Line 1464 sets `is_last_step = self.global_steps >= self.total_training_steps`, and line 1465 opens `with marked_timer("step", timing_raw):` around the rest of the step, from generation to validation.
+`metrics` collects the numbers to log at the end of the step, and `timing_raw` the time of each part.
+
+`batch_dict` comes from the dataloader. `RLHFDataset` reads one row of the parquet file and adds a few fields; `collate_fn` stacks a batch of rows. For GSM8K a row has:
+
+| Field | Holds |
+|---|---|
+| `raw_prompt` | The prompt as a list of chat messages: `[{"role": "user", "content": question}]`. It is not tokenized yet; the agent loop applies the chat template. |
+| `data_source` | `"openai/gsm8k"`. The scoring function is chosen by it. |
+| `reward_model` | `{"style": "rule", "ground_truth": "72"}`: the answer to score against. |
+| `prompt`, `ability`, `extra_info`, `index`, `tools_kwargs`, `interaction_kwargs`, `dummy_tensor` | Not used by GRPO on GSM8K. `dummy_tensor` is a one-byte placeholder that keeps `DataProto.batch` from being empty. |
 
 #### 1.2.1 Build the batch (lines 1435–1448)
 
@@ -104,7 +113,7 @@ A `DataProto` has three fields:
 | <span class="code-green">`non_tensor_batch`</span> | dict of NumPy arrays | Other per-sample data, such as `uid`. |
 | <span class="code-amber">`meta_info`</span> | dict | Values for the whole batch, such as `temperature`. |
 
-The first lines wrap the dataloader's output in a `DataProto`, set the rollout temperature, and give each prompt a unique `uid`. At this point a prompt is still a list of chat messages (`raw_prompt`), not tokens; it is tokenized during generation. `_get_gen_batch` moves the fields that generation needs out of `batch` into a new `DataProto`, `gen_batch`. `batch` keeps only the reward fields and `uid`. `repeat` copies each prompt `rollout.n` times, with the copies next to each other (`interleave=True`). The copies share one `uid`, which later groups the responses to the same prompt.
+The first lines wrap the dataloader's output in a `DataProto`, set the rollout temperature, and give each prompt a unique `uid`. At this point a prompt is still a list of chat messages (`raw_prompt`), not tokens. `_get_gen_batch` splits `batch` in two. `gen_batch` gets every non-tensor field and goes to generation. `batch` keeps `dummy_tensor` and the four fields that the reward and the advantage need: `data_source`, `reward_model`, `extra_info` and `uid`. These four are in both, because the reward is computed during generation (1.2.4) and needs the ground truth. `gen_batch` is consumed by generation and does not come back, so `batch` is the driver's own copy; 1.2.3 joins the generated responses to it. `repeat` copies each prompt `rollout.n` times, with the copies next to each other (`interleave=True`). The copies share one `uid`, which later groups the responses to the same prompt.
 
 #### 1.2.2 Generate (lines 1467–1471)
 
@@ -115,7 +124,9 @@ with marked_timer("gen", timing_raw, color="red"):
     self.checkpoint_manager.sleep_replicas()
 ```
 
-`marked_timer` records how long the block takes, under the name `gen`. `generate_sequences` sends the repeated prompts to the rollout replicas and returns the responses as a `DataProto`. It also computes the reward: each finished response is scored, and the scores come back in the same `DataProto` (see 1.2.4). When the two engines share GPUs, `sleep_replicas` then frees the rollout engine's GPU memory, both the weights and the KV cache, so that the model engine can use it for training. The weights are discarded, not moved to the CPU (vLLM sleep level 2, verl's default): the model engine holds the real copy, and `update_weights` writes the updated weights into the rollout engine at the end of the step.
+`marked_timer` records how long the block takes, under the name `gen`. For GRPO, `combined_gen_batch` is just `gen_batch_output`. `generate_sequences` sends the repeated prompts to the rollout engine and returns the responses as a `DataProto`. Each finished response is scored, and the scores come back in the same `DataProto`, as the tensor `rm_scores` in its `batch` field (see 1.2.4).
+
+When the two engines share GPUs, `sleep_replicas` then frees the rollout engine's GPU memory, both the weights and the KV cache, so that the model engine can use it for training.
 
 #### 1.2.3 Merge and balance (lines 1496–1510)
 
@@ -137,7 +148,7 @@ if self.config.trainer.balance_batch:
 batch.meta_info["global_token_num"] = torch.sum(batch.batch["attention_mask"], dim=-1).tolist()
 ```
 
-`repeat` makes `batch` line up with the responses, row by row. `union` then adds the fields of `gen_batch_output` to `batch`: tensors go into `batch.batch`, arrays into `non_tensor_batch`, and values into `meta_info`. It adds fields, not rows. The two must have the same number of rows, and a field that exists in both must be equal. The arrays include `acc`, from the scoring function (1.2.4), and `__num_turns__`, the number of chat turns in each sample: 2 for a single-turn task like GSM8K, the prompt and the response. It feeds the `num_turns` metrics.
+`repeat` makes `batch` line up with the responses, row by row. `union` then adds the fields of `gen_batch_output` to `batch`: the tensors `prompts`, `responses`, `response_mask`, `input_ids`, `attention_mask`, `position_ids` and `rm_scores`, and the arrays `acc` and `__num_turns__`.
 
 `response_mask` needs two facts about the layout:
 
@@ -154,11 +165,11 @@ attention_mask  0    0    1    1    |  1    1    1    0    0
 response_mask                       |  1    1    1    0    0
 ```
 
-The generation output usually has `response_mask` already; `compute_response_mask` is the fallback. It takes the last columns of `attention_mask`, as many as the response length.
+The generation output usually has `response_mask` already; `compute_response_mask` is the fallback.
 
-`_balance_batch` reorders the rows so that each data-parallel (DP) rank gets a similar amount of work. It estimates the work of a sample from its number of real tokens, and splits the samples into groups with the same number of samples and similar total work. A rank that gets a long sample also gets short ones. DP ranks run in step with each other, so without this a rank with long sequences would keep the others waiting. Section 2 discusses it in detail.
+`_balance_batch` reorders the rows so that each data-parallel (DP) rank gets a similar amount of work. It estimates the work of a sample from its number of real tokens, and splits the samples into groups with the same number of samples and similar total work. Without this a rank with long sequences would keep the others waiting. Section 2 discusses it in detail.
 
-`global_token_num` is the number of real tokens in each sample, prompt and response together, as a list with one entry per row. It is computed after balancing, so its order matches the rows. The workers use it to estimate the FLOPs of a pass over the batch, which gives the MFU metric (model FLOPs utilization: the share of the GPUs' peak speed that the pass reached).
+`global_token_num` is the number of real tokens in each sample, prompt and response together, as a list with one entry per row. It is computed after balancing, so its order matches the rows. The workers use it to estimate the FLOPs of a pass over the batch, which gives the MFU metric.
 
 #### 1.2.4 Reward (lines 1518–1525)
 
@@ -173,12 +184,10 @@ with marked_timer("reward", timing_raw, color="yellow"):
     reward_tensor, reward_extra_infos_dict = extract_reward(batch)
 ```
 
-The score is already in `batch`: it was computed during generation. When a response finishes, a reward worker decodes it and calls the scoring function with the response text and the ground truth. For GSM8K, the function extracts the final answer and compares it with the ground truth. `extract_reward` only reads the result:
+The `if` branch runs only with a learned reward model that shares GPUs with training. A rule-based reward, as for GSM8K, skips it: the score is already in `batch`, computed during generation. When a response finishes, a reward worker decodes it and calls the scoring function with the response text and the ground truth. For GSM8K, the function extracts the final answer and compares it with the ground truth. `extract_reward` only reads the result:
 
 - `reward_tensor` is `batch.batch["rm_scores"]`. Its shape is (batch size, response length), the same as `response_mask`. It is zero everywhere except at the last real response token, which holds the score.
 - `reward_extra_infos_dict` holds the other values that the scoring function returns, one per response. If the function returns a single number, the dict has one key, `acc`.
-
-The `if` branch runs only with a learned reward model (`reward.reward_model.enable`). A rule-based reward, as for GSM8K, skips it.
 
 #### 1.2.5 Old log-probabilities (lines 1542–1567)
 
@@ -213,7 +222,7 @@ if self.use_reference_policy:
         batch = batch.union(ref_log_prob)
 ```
 
-`_compute_ref_log_prob` runs one forward pass of the reference policy, the frozen starting model, and `union` adds the result to `batch`. It is the red term in the KL penalty of the objective:
+`_compute_ref_log_prob` runs one forward pass of the reference policy, the frozen starting model, and `union` adds the result to `batch` as `ref_log_prob`. It is the red term in the KL penalty of the objective:
 
 $$
 \beta\, D_{\mathrm{KL}}\!\big(\pi_\theta \,\|\, \textcolor{#e0433a}{\pi_{\mathrm{ref}}}\big)
@@ -287,12 +296,7 @@ if self.config.trainer.save_freq > 0 and (
         self._save_checkpoint()
 ```
 
-ESI stands for Elastic Server Instance: a cloud instance that is rented for a fixed time and shuts down when the time is over. `should_save_ckpt_esi` reads the expiration time from an environment variable:
-
-- Volcano Engine Machine Learning Platform (veMLP): `MLP_CURRENT_CAPACITY_BLOCK_EXPIRATION_TIMESTAMP`
-- AWS SageMaker: `SAGEMAKER_CURRENT_CAPACITY_BLOCK_EXPIRATION_TIMESTAMP`
-
-It returns true when the remaining time is no more than the longest step so far, plus the time to save a checkpoint (60 seconds by default), plus `trainer.esi_redundant_time`. Then `fit` saves a checkpoint at once, before the instance shuts down. On RunPod neither variable is set, and the function returns false.
+ESI stands for Elastic Server Instance: a cloud instance that is rented for a fixed time and shuts down when the time is over. `should_save_ckpt_esi` reads the expiration time from an environment variable. It returns true when the remaining time is no more than the longest step so far, plus the time to save a checkpoint (60 seconds by default), plus `trainer.esi_redundant_time`. Then `fit` saves a checkpoint at once, before the instance shuts down. On RunPod it is not set, and the function returns false.
 
 #### 1.2.10 Sync the weights (lines 1673–1675)
 
