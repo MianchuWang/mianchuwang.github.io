@@ -33,7 +33,7 @@ Lines 1369–1420 run once, before the first step. Restore state loads a checkpo
 
 #### 1.1.1 Restore state (lines 1383–1389)
 
-```python
+```python lines=1383-1389
 self.global_steps = 0
 
 # load checkpoint and update weights before doing anything
@@ -49,7 +49,7 @@ current_epoch = self.global_steps // len(self.train_dataloader)
 
 #### 1.1.2 Validate before training (lines 1391–1400)
 
-```python
+```python lines=1391-1400
 # perform validation before training
 # currently, we only support validation using the reward_function.
 if self.config.trainer.get("val_before_train", True):
@@ -66,32 +66,20 @@ The `assert` stops the run if validation returns no metrics. The dump executor i
 
 ### 1.2 In the loop
 
-Lines 1422–1768 are the loop. Each pass of the inner loop is one training step. The parts below are the ones a GRPO step runs, in order. Branches that GRPO does not use, such as the critic and REMAX, are left out.
+Lines 1422–1770 are the loop. Each pass of the inner loop is one training step. The parts below are the ones a GRPO step runs, in order. Branches that GRPO does not use, such as the critic and REMAX, are left out.
 
-```python
+```python lines=1422-1423,1426-1427
 for epoch in range(current_epoch, self.config.trainer.total_epochs):
     for batch_dict in self.train_dataloader:
+        metrics = {}
+        timing_raw = {}
 ```
 
-The table shows where each part runs and what it adds to `batch`.
-
-| Part | Runs on | Adds to `batch` |
-|---|---|---|
-| 1.2.1 Build the batch | driver | `uid`, `temperature` |
-| 1.2.2 Generate | rollout engine, reward workers | nothing yet; returns `gen_batch_output` |
-| 1.2.3 Merge and balance | driver | `prompts`, `responses`, `response_mask`, `input_ids`, `attention_mask`, `position_ids`, `rm_scores`, `acc` |
-| 1.2.4 Reward | driver | nothing; reads `rm_scores` |
-| 1.2.5 Old log-probabilities | model engine (actor) | `old_log_probs` |
-| 1.2.6 Reference log-probabilities | model engine (reference policy) | `ref_log_prob` |
-| 1.2.7 Advantage | driver | `token_level_scores`, `token_level_rewards`, `advantages`, `returns` |
-| 1.2.8 Update the actor | model engine (actor) | nothing; returns metrics |
-| 1.2.9 Save a checkpoint | model engine, driver | nothing |
-| 1.2.10 Sync the weights | model engine, rollout engine | nothing |
-| 1.2.11 Validate | rollout engine, reward workers | nothing |
+`metrics` collects the numbers to log at the end of the step, and `timing_raw` the time of each part. Two more lines matter later. Line 1464 sets `is_last_step = self.global_steps >= self.total_training_steps`, and line 1465 opens `with marked_timer("step", timing_raw):` around the rest of the step, from generation to validation.
 
 #### 1.2.1 Build the batch (lines 1435–1448)
 
-```python
+```python lines=1435-1448
 batch: DataProto = DataProto.from_single_dict(batch_dict)
 batch.meta_info["temperature"] = self.config.actor_rollout_ref.rollout.temperature
 
@@ -112,15 +100,15 @@ A `DataProto` has three fields:
 
 | Field | Type | Holds |
 |---|---|---|
-| `batch` | `TensorDict` | Tensors with one row per sample, such as `response_mask` and `old_log_probs`. |
-| `non_tensor_batch` | dict of NumPy arrays | Other per-sample data, such as `uid`. |
-| `meta_info` | dict | Values for the whole batch, such as `temperature`. |
+| <span class="code-blue">`batch`</span> | `TensorDict` | Tensors with one row per sample, such as `response_mask` and `old_log_probs`. |
+| <span class="code-green">`non_tensor_batch`</span> | dict of NumPy arrays | Other per-sample data, such as `uid`. |
+| <span class="code-amber">`meta_info`</span> | dict | Values for the whole batch, such as `temperature`. |
 
 The first lines wrap the dataloader's output in a `DataProto`, set the rollout temperature, and give each prompt a unique `uid`. At this point a prompt is still a list of chat messages (`raw_prompt`), not tokens; it is tokenized during generation. `_get_gen_batch` moves the fields that generation needs out of `batch` into a new `DataProto`, `gen_batch`. `batch` keeps only the reward fields and `uid`. `repeat` copies each prompt `rollout.n` times, with the copies next to each other (`interleave=True`). The copies share one `uid`, which later groups the responses to the same prompt.
 
 #### 1.2.2 Generate (lines 1467–1471)
 
-```python
+```python lines=1467,1470-1471
 with marked_timer("gen", timing_raw, color="red"):
     ...
     combined_gen_output = self.async_rollout_manager.generate_sequences(combined_gen_batch)
@@ -129,9 +117,9 @@ with marked_timer("gen", timing_raw, color="red"):
 
 `marked_timer` records how long the block takes, under the name `gen`. `generate_sequences` sends the repeated prompts to the rollout replicas and returns the responses as a `DataProto`. It also computes the reward: each finished response is scored, and the scores come back in the same `DataProto` (see 1.2.4). When the two engines share GPUs, `sleep_replicas` then frees the rollout engine's GPU memory, both the weights and the KV cache, so that the model engine can use it for training. The weights are discarded, not moved to the CPU (vLLM sleep level 2, verl's default): the model engine holds the real copy, and `update_weights` writes the updated weights into the rollout engine at the end of the step.
 
-#### 1.2.3 Merge and balance (lines 1496–1507)
+#### 1.2.3 Merge and balance (lines 1496–1510)
 
-```python
+```python lines=1496-1510
 # repeat to align with repeated responses in rollout
 batch = batch.repeat(repeat_times=self.config.actor_rollout_ref.rollout.n, interleave=True)
 batch = batch.union(gen_batch_output)
@@ -144,9 +132,12 @@ if "response_mask" not in batch.batch.keys():
 # but might affect the loss calculation (due to the change of mini-batching).
 if self.config.trainer.balance_batch:
     self._balance_batch(batch, metrics=metrics)
+
+# compute global_valid tokens
+batch.meta_info["global_token_num"] = torch.sum(batch.batch["attention_mask"], dim=-1).tolist()
 ```
 
-`repeat` makes `batch` line up with the responses, row by row. `union` then adds the fields of `gen_batch_output` to `batch`: tensors go into `batch.batch`, arrays into `non_tensor_batch`, and values into `meta_info`. It adds fields, not rows. The two must have the same number of rows, and a field that exists in both must be equal.
+`repeat` makes `batch` line up with the responses, row by row. `union` then adds the fields of `gen_batch_output` to `batch`: tensors go into `batch.batch`, arrays into `non_tensor_batch`, and values into `meta_info`. It adds fields, not rows. The two must have the same number of rows, and a field that exists in both must be equal. The arrays include `acc`, from the scoring function (1.2.4), and `__num_turns__`, the number of chat turns in each sample: 2 for a single-turn task like GSM8K, the prompt and the response. It feeds the `num_turns` metrics.
 
 `response_mask` needs two facts about the layout:
 
@@ -167,9 +158,11 @@ The generation output usually has `response_mask` already; `compute_response_mas
 
 `_balance_batch` reorders the rows so that each data-parallel (DP) rank gets a similar amount of work. It estimates the work of a sample from its number of real tokens, and splits the samples into groups with the same number of samples and similar total work. A rank that gets a long sample also gets short ones. DP ranks run in step with each other, so without this a rank with long sequences would keep the others waiting. Section 2 discusses it in detail.
 
+`global_token_num` is the number of real tokens in each sample, prompt and response together, as a list with one entry per row. It is computed after balancing, so its order matches the rows. The workers use it to estimate the FLOPs of a pass over the batch, which gives the MFU metric (model FLOPs utilization: the share of the GPUs' peak speed that the pass reached).
+
 #### 1.2.4 Reward (lines 1518–1525)
 
-```python
+```python lines=1518-1525
 with marked_timer("reward", timing_raw, color="yellow"):
     # compute reward model score
     if self.use_rm and "rm_scores" not in batch.batch.keys():
@@ -189,7 +182,7 @@ The `if` branch runs only with a learned reward model (`reward.reward_model.enab
 
 #### 1.2.5 Old log-probabilities (lines 1542–1567)
 
-```python
+```python lines=1542-1543,1567
 with marked_timer("old_log_prob", timing_raw, color="blue"):
     old_log_prob, old_log_prob_mfu = self._compute_old_log_prob(batch)
     ...
@@ -212,7 +205,7 @@ When `actor.ppo_mini_batch_size` is smaller than `data.train_batch_size`, one st
 
 #### 1.2.6 Reference log-probabilities (lines 1576–1580)
 
-```python
+```python lines=1576-1580
 if self.use_reference_policy:
     # compute reference log_prob
     with marked_timer(str(Role.RefPolicy), timing_raw, color="olive"):
@@ -230,7 +223,7 @@ The step runs only when the KL penalty is on (`actor.use_kl_loss` or `algorithm.
 
 #### 1.2.7 Advantage (lines 1588–1633)
 
-```python
+```python lines=1588,1591,1596-1603,1620-1633
 with marked_timer("adv", timing_raw, color="brown"):
     ...
     batch.batch["token_level_scores"] = reward_tensor
@@ -272,7 +265,7 @@ The group mean is always subtracted. The division by the standard deviation is o
 
 #### 1.2.8 Update the actor (lines 1647–1649)
 
-```python
+```python lines=1647-1649
 # update actor
 with marked_timer("update_actor", timing_raw, color="red"):
     actor_output = self._update_actor(batch)
@@ -282,7 +275,7 @@ with marked_timer("update_actor", timing_raw, color="red"):
 
 #### 1.2.9 Save a checkpoint (lines 1663–1671)
 
-```python
+```python lines=1663-1671
 if self.config.trainer.save_freq > 0 and (
     is_last_step
     or self.global_steps % self.config.trainer.save_freq == 0
@@ -303,7 +296,7 @@ It returns true when the remaining time is no more than the longest step so far,
 
 #### 1.2.10 Sync the weights (lines 1673–1675)
 
-```python
+```python lines=1673-1675
 # update weights from trainer to rollout
 with marked_timer("update_weights", timing_raw, color="red"):
     self.checkpoint_manager.update_weights(self.global_steps)
@@ -313,7 +306,7 @@ This is the same call as in 1.1.1. It copies the updated weights from the model 
 
 #### 1.2.11 Validate (lines 1685–1693)
 
-```python
+```python lines=1685-1693
 # validate
 if self.config.trainer.test_freq > 0 and (
     is_last_step or self.global_steps % self.config.trainer.test_freq == 0
@@ -327,7 +320,70 @@ if self.config.trainer.test_freq > 0 and (
 
 The same `_validate()` as in 1.1.2. It runs every `trainer.test_freq` steps, and on the last step.
 
-### 1.3 After the loop
+#### 1.2.12 Log the metrics and advance the step (lines 1695–1770)
+
+```python lines=1709-1720,1731,1734,1737,1750-1755,1758-1761
+steps_duration = timing_raw["step"]
+self.max_steps_duration = max(self.max_steps_duration, steps_duration)
+
+# training metrics
+metrics.update(
+    {
+        "training/global_step": self.global_steps,
+        "training/epoch": epoch,
+    }
+)
+# collect metrics
+metrics.update(compute_data_metrics(batch=batch, use_critic=self.use_critic))
+...
+metrics.update(compute_timing_metrics(batch=batch, timing_raw=timing_raw))
+...
+metrics.update(compute_throughout_metrics(batch=batch, timing_raw=timing_raw, n_gpus=n_gpus))
+...
+metrics.update(compute_variance_proxy_metrics(batch=batch, gradient_norm=gradient_norm))
+...
+logger.log(data=metrics, step=self.global_steps)
+
+progress_bar.update(1)
+self.global_steps += 1
+
+if is_last_step:
+    ...
+    self._shutdown_dump_executor()
+    pprint(f"Final validation metrics: {last_val_metrics}")
+    progress_bar.close()
+    return
+```
+
+`timing_raw["step"]` is the time of the whole step, from generation to validation. `max_steps_duration` is the longest step so far; the ESI check in 1.2.9 uses it.
+
+The four helpers add the numbers that a run reports at every step:
+
+- `compute_data_metrics`: statistics of the batch. Mean, max and min of the scores, rewards, advantages and returns, and of the prompt and response lengths, plus the share of responses that hit the length limit (`response_length/clip_ratio`).
+- `compute_timing_metrics`: the time of each part in seconds (`timing_s/gen`, `timing_s/update_actor`, and so on), and the same per token.
+- `compute_throughout_metrics`: the total number of tokens in the step, the time per step, and tokens per second per GPU (`perf/throughput`).
+- `compute_variance_proxy_metrics`: an estimate of the variance of the policy gradient, from `old_log_probs` and the advantages.
+
+`logger.log` sends the metrics to the backends listed in `trainer.logger`, such as the console and Weights & Biases, under the current step number.
+
+To sum up 1.2, the table shows where each part runs and what it adds to `batch`.
+
+| Part | Runs on | Adds to `batch` |
+|---|---|---|
+| 1.2.1 Build the batch | driver | <span class="code-green">`uid`</span>, <span class="code-amber">`temperature`</span> |
+| 1.2.2 Generate | rollout engine, reward workers | nothing yet; returns `gen_batch_output` |
+| 1.2.3 Merge and balance | driver | <span class="code-blue">`prompts`, `responses`, `response_mask`, `input_ids`, `attention_mask`, `position_ids`, `rm_scores`</span>, <span class="code-green">`acc`, `__num_turns__`</span>, <span class="code-amber">`global_token_num`</span> |
+| 1.2.4 Reward | driver | nothing; reads <span class="code-blue">`rm_scores`</span> |
+| 1.2.5 Old log-probabilities | model engine (actor) | <span class="code-blue">`old_log_probs`</span> |
+| 1.2.6 Reference log-probabilities | model engine (reference policy) | <span class="code-blue">`ref_log_prob`</span> |
+| 1.2.7 Advantage | driver | <span class="code-blue">`token_level_scores`, `token_level_rewards`, `advantages`, `returns`</span> |
+| 1.2.8 Update the actor | model engine (actor) | nothing; returns metrics |
+| 1.2.9 Save a checkpoint | model engine, driver | nothing |
+| 1.2.10 Sync the weights | model engine, rollout engine | nothing |
+| 1.2.11 Validate | rollout engine, reward workers | nothing |
+| 1.2.12 Log the metrics and advance the step | driver | nothing |
+
+The color of a name is the field of the `DataProto` that holds it: <span class="code-blue">`batch`</span> for tensors, <span class="code-green">`non_tensor_batch`</span> for NumPy arrays, and <span class="code-amber">`meta_info`</span> for values of the whole batch.
 
 ## 2. Workers
 

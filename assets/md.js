@@ -17,14 +17,35 @@ marked.use(
 marked.use({
   gfm: true,
   renderer: {
+    // Fence info string: a language, then options. `lines=1467,1470-1471`
+    // numbers the lines from source: numbers are handed out in order, and a
+    // line that is only `...` (an elision) takes none and shows none. The
+    // gutter is a separate element, so Copy still gets the bare code.
     code({ text, lang }) {
-      const html = lang && hljs.getLanguage(lang)
-        ? hljs.highlight(text, { language: lang }).value
+      const [language, ...opts] = (lang || "").split(/\s+/);
+      const html = language && hljs.getLanguage(language)
+        ? hljs.highlight(text, { language }).value
         : escapeHtml(text);
-      return `<pre><code class="hljs">${html}</code></pre>`;
+      const lines = opts.find((o) => o.startsWith("lines="));
+      if (!lines) return `<pre><code class="hljs">${html}</code></pre>`;
+      const gutter = lineNumbers(text, lines.slice("lines=".length)).join("\n");
+      return `<pre class="has-ln"><span class="ln" aria-hidden="true">${gutter}</span><code class="hljs">${html}</code></pre>`;
     },
   },
 });
+
+function lineNumbers(text, spec) {
+  const pool = [];
+  for (const part of spec.split(",")) {
+    const [a, b = a] = part.split("-").map(Number);
+    for (let n = a; n <= b; n++) pool.push(n);
+  }
+  const out = text.replace(/\n$/, "").split("\n").map((line) =>
+    line.trim() === "..." ? "" : (pool.shift() ?? "")
+  );
+  if (pool.length) console.warn(`lines=${spec}: ${pool.length} number(s) unused`);
+  return out;
+}
 
 function escapeHtml(s) {
   return s

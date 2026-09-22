@@ -125,6 +125,24 @@
   padding: 0.15em 0.4em;
 }
 
+/* Colored inline code. Markdown wraps the code spans in a span:
+   <span class="code-blue">`x`, `y`</span>. Content decides what a color means
+   (a table legend); the hues come from the chart tokens, mixed toward --fg so
+   they stay readable in both themes. */
+
+.article-body .code-blue code {
+  color: color-mix(in srgb, var(--chart-s1) 75%, var(--fg));
+  background: color-mix(in srgb, var(--chart-s1) 12%, transparent);
+}
+.article-body .code-green code {
+  color: color-mix(in srgb, var(--chart-s3) 75%, var(--fg));
+  background: color-mix(in srgb, var(--chart-s3) 12%, transparent);
+}
+.article-body .code-amber code {
+  color: color-mix(in srgb, var(--chart-s4) 75%, var(--fg));
+  background: color-mix(in srgb, var(--chart-s4) 14%, transparent);
+}
+
 .article-body pre {
   background: var(--code-bg);
   border: 1px solid var(--divider);
@@ -141,6 +159,28 @@
   padding: 0;
   color: inherit;
   display: block;
+}
+
+/* source line numbers: ```python lines=1467,1470-1471 (see md.js) */
+
+.article-body pre.has-ln {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 16px;
+}
+
+.article-body pre.has-ln .ln {
+  position: sticky;
+  left: 0;
+  font-family: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 85%;
+  text-align: right;
+  color: var(--fg-faint);
+  background: var(--code-bg);
+  border-right: 1px solid var(--divider);
+  padding-right: 12px;
+  user-select: none;
 }
 
 .copy-btn {

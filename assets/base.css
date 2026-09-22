@@ -248,11 +248,6 @@ a {
   line-height: 1.6;
 }
 .site-footer span { display: block; }
-.site-footer span + span {
-  margin-top: 2px;
-  font-size: 12px;
-  opacity: 0.85;
-}
 
 /* ----------------------------------------------------------- misc -- */
 

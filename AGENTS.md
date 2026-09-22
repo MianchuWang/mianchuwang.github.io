@@ -75,6 +75,9 @@ copy buttons, and the Contents.
 - Callouts are blockquotes that start with `[!info]`, `[!note]`, `[!warning]`
   and so on.
 - Math is KaTeX through `marked-katex-extension`; `$x$` works without spaces.
+- A code fence may carry `lines=1467,1470-1471` after the language to show
+  source line numbers in a gutter. Numbers go to the lines in order; a line
+  that is only `...` marks an elision and gets none.
 - Charts are `<div class="chart" data-src="…json" data-metric="…">`, rendered
   by `assets/chart.js`. Its header comment holds a compatibility contract:
   add features as new options whose default keeps old charts unchanged.

@@ -48,14 +48,17 @@ $$
 
 ## Code
 
-Inline code: `torch.einsum("bqd,bkd->bqk", q, k)`. Code blocks get syntax highlighting and a hover copy button:
+Colored inline code marks a category that the text defines: <span class="code-blue">`batch`, `advantages`</span>, <span class="code-green">`uid`</span>, <span class="code-amber">`temperature`</span>.
 
-```python
+Inline code: `torch.einsum("bqd,bkd->bqk", q, k)`. Code blocks get syntax highlighting and a hover copy button. A fence can carry `lines=` to show source line numbers; a line that is only `...` marks an elision and gets no number:
+
+```python lines=40-44,50-53
 @torch.no_grad()
 def sample(model, shape, T, alpha, alpha_bar, sigma):
     x = torch.randn(shape)
     for t in reversed(range(1, T + 1)):
         eps = model(x, t)
+    ...
         x = (x - (1 - alpha[t]) / (1 - alpha_bar[t]).sqrt() * eps) / alpha[t].sqrt()
         if t > 1:
             x += sigma[t] * torch.randn_like(x)
