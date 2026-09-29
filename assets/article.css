@@ -224,6 +224,44 @@
   font-weight: 600;
 }
 
+/* diagrams: <div class="diagram"><svg>…</svg></div>, inline in the Markdown.
+   Shapes and text take their colors from the classes below, so a diagram
+   follows the theme. */
+
+.article-body .diagram {
+  margin: 1.6em 0;
+  overflow-x: auto;
+}
+.diagram svg {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+  font-family: inherit;
+}
+.diagram rect { stroke-width: 1; }
+.diagram .proc { fill: var(--callout-bg); stroke: var(--divider); }
+.diagram .box { fill: var(--bg); stroke: var(--fg-faint); }
+.diagram .gpu { fill: var(--bg); stroke: var(--fg-faint); }
+.diagram .back { fill: var(--bg); stroke: var(--divider); }
+.diagram .pool { fill: none; stroke: var(--fg-faint); stroke-dasharray: 5 4; }
+.diagram .model {
+  fill: color-mix(in srgb, var(--chart-s1) 12%, var(--bg));
+  stroke: color-mix(in srgb, var(--chart-s1) 60%, transparent);
+}
+.diagram .rollout {
+  fill: color-mix(in srgb, var(--chart-s2) 12%, var(--bg));
+  stroke: color-mix(in srgb, var(--chart-s2) 60%, transparent);
+}
+.diagram text { fill: var(--fg); font-size: 12.5px; }
+.diagram .b { font-weight: 600; }
+.diagram .m { font-family: var(--font-mono); font-size: 12px; }
+.diagram .s { fill: var(--fg-soft); font-size: 11.5px; }
+.diagram .e { text-anchor: end; }
+.diagram .c { text-anchor: middle; }
+.diagram .arrow { fill: none; stroke: var(--fg-soft); stroke-width: 1.2; }
+.diagram .head { fill: var(--fg-soft); }
+
 /* math */
 
 .article-body .katex { font-size: 1.06em; }

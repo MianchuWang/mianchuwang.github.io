@@ -83,6 +83,21 @@ A plain blockquote stays a blockquote:
 
 > The best way to predict the future is to invent it.
 
+## Diagrams
+
+A diagram is an inline SVG in a `diagram` block. Its classes take their colors from the theme:
+
+<div class="diagram">
+<svg viewBox="0 0 760 120" role="img" aria-label="A driver box with an arrow to a model box and a rollout box.">
+<defs><marker id="dg-arrow-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="proc" x="10" y="10" width="740" height="100" rx="8"/>
+<rect class="box" x="30" y="30" width="180" height="60" rx="6"/><text class="m" x="44" y="56">driver</text><text class="s" x="44" y="74">class box</text>
+<rect class="model" x="290" y="30" width="180" height="60" rx="6"/><text class="t" x="304" y="56">model engine</text><text class="s" x="304" y="74">class model</text>
+<rect class="rollout" x="550" y="30" width="180" height="60" rx="6"/><text class="t" x="564" y="56">rollout engine</text><text class="s" x="564" y="74">class rollout</text>
+<path class="arrow" d="M210,60 L289,60" marker-end="url(#dg-arrow-t)"/><path class="arrow" d="M470,60 L549,60" marker-end="url(#dg-arrow-t)"/>
+</svg>
+</div>
+
 ## Tables and lists
 
 | Method | Sampling steps | Retraining |

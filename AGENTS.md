@@ -78,6 +78,9 @@ copy buttons, and the Contents.
 - A code fence may carry `lines=1467,1470-1471` after the language to show
   source line numbers in a gutter. Numbers go to the lines in order; a line
   that is only `...` marks an elision and gets none.
+- A diagram is an inline `<svg>` inside `<div class="diagram">`, with no blank
+  line inside the block. Shapes and text use the `.diagram` classes in
+  `article.css`, never literal colors, so the diagram follows the theme.
 - Charts are `<div class="chart" data-src="…json" data-metric="…">`, rendered
   by `assets/chart.js`. Its header comment holds a compatibility contract:
   add features as new options whose default keeps old charts unchanged.
